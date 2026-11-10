@@ -116,6 +116,7 @@ const PYBRICKS_SHIM = [
   'class StopWatch:',
   '    def time(self): return 0',
   'pybricks = types.ModuleType("pybricks")',
+  'pybricks.__path__ = []',
   'parameters = types.ModuleType("pybricks.parameters")',
   'for item in (Port, Stop, Direction, Color, Axis, Button): setattr(parameters, item.__name__, item)',
   'pupdevices = types.ModuleType("pybricks.pupdevices")',
