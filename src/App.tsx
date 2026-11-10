@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Grid, OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import {
-  Activity, Bot, Check, ChevronDown, Code2, Cpu, Download, Gauge, Pause, Plus, Trash2,
+  Activity, Bot, Camera, Check, ChevronDown, Code2, Cpu, Download, Gauge, Pause, Plus, Trash2,
   Play, RotateCcw, Save, StepForward, Square, Timer, Upload, Wifi,
 } from 'lucide-react'
 import * as THREE from 'three'
@@ -105,13 +105,13 @@ function RobotModel({ state, config, arena }: { state: RobotState; config: Robot
   )
 }
 
-function ArenaScene({ state, config, arena }: { state: RobotState; config: RobotConfig; arena: ArenaDefinition }) {
+function ArenaScene({ state, config, arena, topDown }: { state: RobotState; config: RobotConfig; arena: ArenaDefinition; topDown: boolean }) {
   return (
     <>
       <color attach="background" args={['#101a26']} />
       <ambientLight intensity={0.72} />
       <directionalLight position={[3, 6, 4]} intensity={1.7} castShadow shadow-mapSize={[1024, 1024]} />
-      <PerspectiveCamera makeDefault position={[3.8, 4.1, 4.8]} fov={43} />
+      <PerspectiveCamera makeDefault position={topDown ? [0, 4.5, 0.001] : [3.8, 4.1, 4.8]} up={topDown ? [0, 0, -1] : [0, 1, 0]} fov={43} />
       <mesh receiveShadow position={[0, -0.035, 0]}>
         <boxGeometry args={[arena.width, 0.06, arena.depth]} />
         <meshStandardMaterial color="#1c3336" roughness={0.94} />
@@ -175,7 +175,7 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
         </group>
       ))}
       <RobotModel state={state} config={config} arena={arena} />
-      <OrbitControls target={[0, 0, 0]} minDistance={2.7} maxDistance={7.5} maxPolarAngle={Math.PI / 2.05} />
+      <OrbitControls target={[0, 0, 0]} enableRotate={!topDown} minDistance={1.6} maxDistance={7.5} maxPolarAngle={Math.PI / 2.05} />
     </>
   )
 }
@@ -228,6 +228,7 @@ export default function App() {
   const [completedMissions, setCompletedMissions] = useState<string[]>([])
   const [logs, setLogs] = useState<string[]>(['Runtime pronto. Carregue um programa para iniciar.'])
   const [showRobotSettings, setShowRobotSettings] = useState(false)
+  const [topDown, setTopDown] = useState(false)
   const queueRef = useRef<SimulationCommand[]>([])
   const waitRemainingRef = useRef(0)
   const stateRef = useRef<RobotState>(createInitialRobot())
@@ -558,9 +559,10 @@ export default function App() {
             {arena.layoutNote && <div className="arena-note">{arena.layoutNote}</div>}
             <div className="viewport">
               <Canvas shadows dpr={[1, 1.6]}>
-                <ArenaScene state={robotState} config={robotConfig} arena={arena} />
+                <ArenaScene state={robotState} config={robotConfig} arena={arena} topDown={topDown} />
               </Canvas>
               <div className="viewport-tag"><span className="live-dot" /> LIVE VIEW</div>
+              <button className="camera-toggle" onClick={() => setTopDown((value) => !value)} title={topDown ? 'Voltar à vista 3D' : 'Alternar para vista superior'}><Camera size={14} /> {topDown ? 'VISTA 3D' : 'VISTA SUPERIOR'}</button>
               <div className="axis-tag">X {robotState.x.toFixed(2)} · Z {robotState.z.toFixed(2)} · {heading.toFixed(0)}°</div>
             </div>
             <div className="sim-footer">
