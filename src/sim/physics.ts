@@ -6,7 +6,7 @@ export const ROBOT_RADIUS_METERS = 0.14
 export function createInitialRobot(): RobotState {
   return {
     x: 0.42,
-    z: 2.55,
+    z: 0.42,
     heading: 0,
     leftSpeedMmS: 0,
     rightSpeedMmS: 0,
