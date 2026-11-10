@@ -30,16 +30,18 @@ npm run build
 
 ## Funcionalidades desta versão
 
-- Arena 3D de treino com dimensões configuráveis, bordas, obstáculos e alvos demonstrativos.
-- Robô diferencial virtual com configuração de diâmetro de roda, distância entre rodas e portas dos motores.
+- Três presets: arena de treino com alvos demonstrativos, arena livre redimensionável e referência de campo BIOGLOW 2026–2027.
+- Robô diferencial virtual com chassis configurável, diâmetro de roda, distância entre rodas, motores e sensores montados por porta/posição/orientação.
 - Física determinística em passo fixo, limites do campo e colisão simplificada com obstáculos.
 - Editor Monaco com realce de sintaxe Python.
 - Pyodide em Web Worker, com timeout e cancelamento por encerramento do Worker.
 - Camada de compatibilidade para `Motor`, `DriveBase`, `Port`, `Stop`, `wait`, hub e sensores básicos.
 - Sensores virtuais de distância, cor/reflexão e força com leituras relativas à montagem; IMU com heading.
+- Vista orbital 3D e vista superior para alinhamento de trajetórias.
+- Catálogo de 15 missões BIOGLOW e malha de referência de 20 cm em um campo 2,0 × 1,2 m. Modelos 3D e pontuação oficial ainda não implementados.
 - Console, telemetria, pausa, retomada, passo único, parar e reset.
 - Cronômetro de 2min30s e pontos demonstrativos por alvos da arena.
-- Duas arenas demonstrativas selecionáveis, com dimensões editáveis no modo livre.
+- Arena livre com dimensões editáveis entre 1 e 8 metros, persistidas localmente e no arquivo do projeto.
 - Exportação/importação de projetos JSON e salvamento local.
 
 ## Exemplo
@@ -60,7 +62,7 @@ robot.straight(300)
 robot.stop()
 ```
 
-O runtime implementa um subconjunto intencional. Chamadas de movimento são convertidas em comandos para o simulador; não existe sincronização de execução instrução-a-instrução com o ambiente real. Leituras de sensores usam o estado enviado ao iniciar a execução do programa. Consulte [docs/PYBRICKS_COMPATIBILITY.md](docs/PYBRICKS_COMPATIBILITY.md).
+O runtime implementa um subconjunto intencional. Chamadas de movimento são convertidas em comandos para o simulador; não existe sincronização de execução instrução-a-instrução com o ambiente real. Leituras de sensores usam snapshots do instante de início da execução do programa. Motores sem comando de parada podem continuar girando até colisão, fim da rodada ou interrupção manual. Consulte [docs/PYBRICKS_COMPATIBILITY.md](docs/PYBRICKS_COMPATIBILITY.md).
 
 ## Estrutura
 
@@ -68,7 +70,7 @@ O runtime implementa um subconjunto intencional. Chamadas de movimento são conv
 - `src/robot`: preset e schema de configuração/projeto.
 - `src/runtime`: Worker Python e comunicação com Pyodide.
 - `src/App.tsx`: interface e ciclo de execução.
-- `data/arenas`: arenas demonstrativas em JSON.
+- `src/sim/seasons`: presets versionados de temporadas e suas referências.
 - `docs`: arquitetura, compatibilidade e plano de implementação.
 
 ## Segurança e limitações
@@ -77,10 +79,15 @@ O código Python é executado no Worker do navegador, não em um servidor privil
 
 A física é uma aproximação educacional. Dimensões, atrito, aceleração, sensores, geometria dos robôs e comportamento das missões ainda precisam ser calibrados contra o hardware e os tapetes reais. As missões atualmente carregadas são apenas demonstrações, não regras oficiais de uma temporada FLL.
 
-## Próximos passos
+## Ainda não concluído
 
-1. Builder visual completo com conectores e peças LEGO.
-2. Sensores com leitura em tempo de simulação e chamadas bloqueantes.
-3. Importação de arenas por temporada com validação oficial de dimensões/regras.
-4. Replay detalhado e compartilhamento online.
-5. Runtime remoto isolado somente se houver necessidade real e sandbox dedicada.
+1. Builder completo com catálogo de peças LEGO, conectores físicos e montagem modular com colisores por peça. O construtor atual cobre chassis, portas e sensores.
+2. Leituras de sensores intercaladas com movimentos e APIs bloqueantes durante a mesma execução Python.
+3. Modelos 3D de missões e motor de pontuação oficial BIOGLOW validado contra o Robot Game Rulebook e as atualizações FIRST.
+4. Replay determinístico completo, gravação de telemetria e compartilhamento online.
+5. Aceleração, atrito, inércia, encoder, PID e calibração de física contra robôs reais.
+6. Runtime remoto isolado somente se houver necessidade real e sandbox dedicada.
+
+## Estado de validação desta branch
+
+A pipeline do GitHub Actions está configurada, mas o estado de build/teste desta branch ainda não pôde ser confirmado nesta sessão. Não considere os testes aprovados até conferir os checks da PR. A aplicação também precisa de validação visual em um navegador com WebGL 2.
