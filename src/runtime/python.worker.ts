@@ -139,6 +139,7 @@ const PYBRICKS_SHIM = [
   'robotics = types.ModuleType("pybricks.robotics"); robotics.DriveBase = DriveBase',
   'hubs = types.ModuleType("pybricks.hubs"); hubs.PrimeHub = PrimeHub',
   'tools = types.ModuleType("pybricks.tools"); tools.wait = wait',
+  'pybricks.parameters, pybricks.pupdevices, pybricks.robotics, pybricks.hubs, pybricks.tools = parameters, pupdevices, robotics, hubs, tools',
   'sys.modules.update({"pybricks":pybricks,"pybricks.parameters":parameters,"pybricks.pupdevices":pupdevices,"pybricks.robotics":robotics,"pybricks.hubs":hubs,"pybricks.tools":tools})',
   '_original_import = builtins.__import__',
   'def _restricted_import(name, globals=None, locals=None, fromlist=(), level=0):',
