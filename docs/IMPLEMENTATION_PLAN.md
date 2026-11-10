@@ -44,7 +44,7 @@ Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A e
 - [ ] Replay completo, timeline de eventos e telemetria exportável.
 - [~] Smoke test automatizado em Chromium adicionado; a primeira execução desta suíte ainda precisa ser acompanhada. Revisão visual ampla e acessibilidade continuam pendentes.
 - [x] Typecheck, 19 testes unitários e build de produção aprovados pelo GitHub Actions (run 165).
-- [ ] Executar e aprovar o E2E Playwright adicionado após o run 165.
+- [ ] Executar e aprovar o E2E Playwright com timeout de inicialização ampliado; o run 179 passou após uma repetição, mas foi classificado como flaky e precisa de nova execução limpa.
 
 ### Verificação
 Na sessão de implementação, a integração GitHub retornou a branch adiantada em relação a `main`, mas não retornou workflow runs nem status checks para o commit consultado. O ambiente de execução desta sessão não conseguiu obter o repositório por rede para rodar npm localmente. Portanto, **typecheck, testes, build e navegador permanecem não verificados** até que a CI da PR seja executada e seus resultados sejam inspecionados.
@@ -178,4 +178,4 @@ Construir uma aplicação web em que equipes possam montar robôs LEGO virtuais,
 - Contas multiusuário, ranking online e backend de competição.
 
 ## Estado de validação
-Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado. Existem 19 casos unitários e um E2E escritos. O GitHub Actions run 165 aprovou typecheck, os 19 testes unitários e o build de produção. A suíte E2E foi adicionada depois desse run e aguarda execução em uma nova pipeline.
+Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado. Existem 19 casos unitários e um E2E escritos. O GitHub Actions run 179 aprovou typecheck, os 19 testes unitários e o build de produção. O E2E passou na repetição, mas a primeira tentativa falhou no cold start do Pyodide; a janela de inicialização foi ampliada e precisa de nova execução para confirmar estabilidade.
