@@ -36,9 +36,10 @@ npm run build
 - Editor Monaco com realce de sintaxe Python.
 - Pyodide em Web Worker, com timeout e cancelamento por encerramento do Worker.
 - Camada de compatibilidade para `Motor`, `DriveBase`, `Port`, `Stop`, `wait`, hub e sensores básicos.
-- Sensor de distância, cor/reflexão, IMU e força simulados.
+- Sensores virtuais de distância, cor/reflexão e força com leituras relativas à montagem; IMU com heading.
 - Console, telemetria, pausa, retomada, passo único, parar e reset.
 - Cronômetro de 2min30s e pontos demonstrativos por alvos da arena.
+- Duas arenas demonstrativas selecionáveis, com dimensões editáveis no modo livre.
 - Exportação/importação de projetos JSON e salvamento local.
 
 ## Exemplo
