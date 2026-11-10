@@ -1,4 +1,4 @@
-import type { ArenaDefinition, RobotState, SensorSnapshot } from './types'
+import type { ArenaDefinition, RobotState, SensorMount, SensorSnapshot } from './types'
 
 function rayRectDistance(
   ox: number,
@@ -30,18 +30,24 @@ function rayRectDistance(
   return far >= 0 ? Math.max(0, near) : null
 }
 
-export function readDistanceMm(state: RobotState, arena: ArenaDefinition, maxDistanceMm = 2000): number {
-  const dx = Math.sin(state.heading)
-  const dz = Math.cos(state.heading)
+export function readDistanceMm(
+  state: RobotState,
+  arena: ArenaDefinition,
+  maxDistanceMm = 2000,
+  origin = { x: state.x, z: state.z },
+  heading = state.heading,
+): number {
+  const dx = Math.sin(heading)
+  const dz = Math.cos(heading)
   const boundaryDistances: number[] = []
-  if (dx > 1e-9) boundaryDistances.push((arena.width - state.x) / dx)
-  if (dx < -1e-9) boundaryDistances.push((0 - state.x) / dx)
-  if (dz > 1e-9) boundaryDistances.push((arena.depth - state.z) / dz)
-  if (dz < -1e-9) boundaryDistances.push((0 - state.z) / dz)
+  if (dx > 1e-9) boundaryDistances.push((arena.width - origin.x) / dx)
+  if (dx < -1e-9) boundaryDistances.push((0 - origin.x) / dx)
+  if (dz > 1e-9) boundaryDistances.push((arena.depth - origin.z) / dz)
+  if (dz < -1e-9) boundaryDistances.push((0 - origin.z) / dz)
   const distances = boundaryDistances.filter((distance) => distance >= 0)
   for (const obstacle of arena.obstacles) {
     const hit = rayRectDistance(
-      state.x, state.z, dx, dz,
+      origin.x, origin.z, dx, dz,
       obstacle.x - obstacle.width / 2,
       obstacle.x + obstacle.width / 2,
       obstacle.z - obstacle.depth / 2,
@@ -53,9 +59,22 @@ export function readDistanceMm(state: RobotState, arena: ArenaDefinition, maxDis
   return Math.max(0, Math.min(maxDistanceMm, nearest * 1000))
 }
 
-export function readSensorSnapshot(state: RobotState, arena: ArenaDefinition): SensorSnapshot {
+export function readSensorSnapshot(
+  state: RobotState,
+  arena: ArenaDefinition,
+  mount?: SensorMount,
+): SensorSnapshot {
+  const localX = (mount?.xMm ?? 0) / 1000
+  const localZ = (mount?.zMm ?? 120) / 1000
+  const cos = Math.cos(state.heading)
+  const sin = Math.sin(state.heading)
+  const origin = {
+    x: state.x + localX * cos + localZ * sin,
+    z: state.z - localX * sin + localZ * cos,
+  }
+  const sensorHeading = state.heading + (mount?.rotationDeg ?? 0) * Math.PI / 180
   const target = arena.targets.find((item) =>
-    Math.hypot(state.x - item.x, state.z - item.z) <= item.radius,
+    Math.hypot(origin.x - item.x, origin.z - item.z) <= item.radius,
   )
   const color = target?.id.includes('green')
     ? 'GREEN'
@@ -65,9 +84,9 @@ export function readSensorSnapshot(state: RobotState, arena: ArenaDefinition): S
         ? 'BLUE'
         : 'BLACK'
   const reflection = color === 'BLACK' ? 8 : color === 'GREEN' ? 42 : color === 'YELLOW' ? 75 : 55
-  const headingDeg = ((state.heading * 180 / Math.PI) % 360 + 360) % 360
+  const headingDeg = ((sensorHeading * 180 / Math.PI) % 360 + 360) % 360
   return {
-    distanceMm: readDistanceMm(state, arena),
+    distanceMm: readDistanceMm(state, arena, 2000, origin, sensorHeading),
     color,
     reflection,
     headingDeg,
