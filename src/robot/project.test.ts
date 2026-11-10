@@ -14,4 +14,23 @@ describe('project document validation', () => {
       robot: { ...project.robot, rightMotorPort: project.robot.leftMotorPort },
     })).toThrow()
   })
+
+  it('rejects a sensor connected to a motor port', () => {
+    const project = createProject('pass')
+    expect(() => parseProject({
+      ...project,
+      robot: {
+        ...project.robot,
+        sensorMounts: project.robot.sensorMounts.map((sensor, index) =>
+          index === 0 ? { ...sensor, port: project.robot.leftMotorPort } : sensor,
+        ),
+      },
+    })).toThrow()
+  })
+
+  it('keeps custom arena dimensions in the project document', () => {
+    const project = createProject('pass', undefined, 'robosim-custom-v1', 5, 2.5)
+    expect(parseProject(project).arenaWidth).toBe(5)
+    expect(parseProject(project).arenaDepth).toBe(2.5)
+  })
 })
