@@ -340,7 +340,11 @@ export default function App() {
     try {
       const commands = await executePython(
         code,
-        readSensorSnapshot(initial, arena),
+        {
+          ...readSensorSnapshot(initial, arena),
+          motorPorts: { left: robotConfig.leftMotorPort, right: robotConfig.rightMotorPort },
+          sensorMounts: robotConfig.sensorMounts,
+        },
         addLog,
         30_000,
         controller.signal,
