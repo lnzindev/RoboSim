@@ -24,6 +24,7 @@ Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A e
 - [x] Leituras de sensores por snapshot inicial, considerando a pose configurada do sensor.
 - [x] Exportação/importação JSON e salvamento local.
 - [x] 19 casos de teste unitário escritos para física, DriveBase, sensores, geometria de arena, pontuação demonstrativa e schema de projetos.
+- [x] Teste E2E Playwright para abrir a aplicação em Chromium, validar arena/editor/builder, redimensionar arena livre e executar o programa Python inicial.
 
 ### Parcial
 - [~] Compatibilidade Pybricks: API parcial; não é firmware MicroPython e não tem semântica completa de bloqueio, encoder ou PID.
@@ -41,8 +42,9 @@ Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A e
 - [ ] Builder com catálogo de peças, conectores, acessórios e montagem modular.
 - [ ] Modelos 3D das missões BIOGLOW e pontuação validada pelas regras/updates oficiais.
 - [ ] Replay completo, timeline de eventos e telemetria exportável.
-- [ ] Verificação visual em navegador e acessibilidade.
-- [ ] Build de produção e suíte de testes efetivamente executados e aprovados.
+- [~] Smoke test automatizado em Chromium adicionado; a primeira execução desta suíte ainda precisa ser acompanhada. Revisão visual ampla e acessibilidade continuam pendentes.
+- [x] Typecheck, 19 testes unitários e build de produção aprovados pelo GitHub Actions (run 165).
+- [ ] Executar e aprovar o E2E Playwright adicionado após o run 165.
 
 ### Verificação
 Na sessão de implementação, a integração GitHub retornou a branch adiantada em relação a `main`, mas não retornou workflow runs nem status checks para o commit consultado. O ambiente de execução desta sessão não conseguiu obter o repositório por rede para rodar npm localmente. Portanto, **typecheck, testes, build e navegador permanecem não verificados** até que a CI da PR seja executada e seus resultados sejam inspecionados.
@@ -176,4 +178,4 @@ Construir uma aplicação web em que equipes possam montar robôs LEGO virtuais,
 - Contas multiusuário, ranking online e backend de competição.
 
 ## Estado de validação
-Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado. Existem 19 casos escritos, mas typecheck, testes e build continuam pendentes de execução; a integração GitHub disponível nesta sessão não retornou workflow runs nem status checks.
+Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado. Existem 19 casos unitários e um E2E escritos. O GitHub Actions run 165 aprovou typecheck, os 19 testes unitários e o build de produção. A suíte E2E foi adicionada depois desse run e aguarda execução em uma nova pipeline.
