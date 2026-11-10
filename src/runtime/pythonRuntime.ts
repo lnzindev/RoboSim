@@ -5,7 +5,7 @@ export function executePython(
   code: string,
   environment: RuntimeEnvironment,
   onOutput: (message: string) => void,
-  timeoutMs = 12_000,
+  timeoutMs = 30_000,
 ): Promise<SimulationCommand[]> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('./python.worker.ts', import.meta.url), { type: 'module' })
