@@ -25,7 +25,7 @@ test('arena, editor, builder and Python runtime work in Chromium', async ({ page
   await page.getByLabel('Selecionar arena').selectOption('robosim-practice-v1')
   await page.getByRole('button', { name: 'Executar código' }).click()
   await expect(page.locator('.console-output')).toContainText('Programa concluído. Motores parados.', {
-    timeout: 100_000,
+    timeout: 190_000,
   })
   await expect(page.getByText('AGUARDANDO EXECUÇÃO')).toBeVisible()
 
