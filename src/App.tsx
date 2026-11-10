@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import Editor from '@monaco-editor/react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Grid, OrbitControls, PerspectiveCamera } from '@react-three/drei'
@@ -296,7 +297,7 @@ export default function App() {
     return () => cancelAnimationFrame(frame)
   }, [status, advanceOneTick])
 
-  const sensorSnapshot = readSensorSnapshot(robotState, robotConfig, practiceArena)
+  const sensorSnapshot = readSensorSnapshot(robotState, practiceArena)
   const averageSpeed = Math.round((Math.abs(robotState.leftSpeedMmS) + Math.abs(robotState.rightSpeedMmS)) / 2)
   const heading = ((robotState.heading * 180 / Math.PI) % 360 + 360) % 360
 
@@ -316,7 +317,7 @@ export default function App() {
     try {
       const commands = await executePython(
         code,
-        readSensorSnapshot(initial, robotConfig, practiceArena),
+        readSensorSnapshot(initial, practiceArena),
         addLog,
       )
       const prepared = prepareCommands(commands)
@@ -390,7 +391,7 @@ export default function App() {
     addLog('Projeto exportado em JSON.')
   }
 
-  async function importProject(event: React.ChangeEvent<HTMLInputElement>) {
+  async function importProject(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
     try {
