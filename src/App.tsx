@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import Editor from '@monaco-editor/react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -184,6 +184,15 @@ function loadSavedArena(): string {
   try { return localStorage.getItem('robosim:arena') || practiceArena.id } catch { return practiceArena.id }
 }
 
+function loadSavedNumber(key: string, fallback: number): number {
+  try {
+    const value = Number(localStorage.getItem(key))
+    return Number.isFinite(value) && value >= 1 && value <= 8 ? value : fallback
+  } catch {
+    return fallback
+  }
+}
+
 function loadSavedConfig(): RobotConfig {
   try {
     const raw = localStorage.getItem('robosim:robot')
@@ -197,7 +206,12 @@ export default function App() {
   const [code, setCode] = useState(loadSavedCode)
   const [robotConfig, setRobotConfig] = useState<RobotConfig>(loadSavedConfig)
   const [arenaId, setArenaId] = useState(loadSavedArena)
-  const arena = arenaId === customArena.id ? customArena : practiceArena
+  const [customWidth, setCustomWidth] = useState(() => loadSavedNumber('robosim:custom-width', 4))
+  const [customDepth, setCustomDepth] = useState(() => loadSavedNumber('robosim:custom-depth', 3))
+  const arena = useMemo(
+    () => arenaId === customArena.id ? { ...customArena, width: customWidth, depth: customDepth } : practiceArena,
+    [arenaId, customWidth, customDepth],
+  )
   const [robotState, setRobotState] = useState<RobotState>(createInitialRobot)
   const [status, setStatus] = useState<RunStatus>('idle')
   const [remaining, setRemaining] = useState(150)
@@ -223,10 +237,12 @@ export default function App() {
       localStorage.setItem('robosim:code', code)
       localStorage.setItem('robosim:robot', JSON.stringify(robotConfig))
       localStorage.setItem('robosim:arena', arena.id)
+      localStorage.setItem('robosim:custom-width', String(customWidth))
+      localStorage.setItem('robosim:custom-depth', String(customDepth))
     } catch {
       addLog('Não foi possível salvar automaticamente neste navegador.')
     }
-  }, [code, robotConfig, arena, addLog])
+  }, [code, robotConfig, arena, customWidth, customDepth, addLog])
 
   const advanceOneTick = useCallback((deltaSeconds: number) => {
     let next = stateRef.current
@@ -421,7 +437,7 @@ export default function App() {
   }
 
   function exportProject() {
-    const project = createProject(code, robotConfig, arena.id)
+    const project = createProject(code, robotConfig, arena.id as 'robosim-practice-v1' | 'robosim-custom-v1', arena.width, arena.depth)
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -440,6 +456,8 @@ export default function App() {
       setCode(project.code)
       setRobotConfig(project.robot)
       setArenaId(project.arenaId)
+      setCustomWidth(project.arenaWidth)
+      setCustomDepth(project.arenaDepth)
       addLog(`Projeto importado: ${project.name}`)
     } catch (error) {
       addLog(`Arquivo inválido: ${error instanceof Error ? error.message : String(error)}`)
@@ -511,6 +529,13 @@ export default function App() {
               <div><span className="eyebrow">AMBIENTE DE TESTE · NÃO OFICIAL</span><h1>{arena.name}</h1></div>
               <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><select className="arena-select" aria-label="Selecionar arena" value={arena.id} onChange={(event) => setArenaId(event.target.value)}><option value="robosim-practice-v1">FLL treino</option><option value="robosim-custom-v1">Arena livre</option></select><span>{arena.width} × {arena.depth} M</span></div>
             </div>
+            {arena.id === customArena.id && (
+              <div className="arena-size-settings">
+                <label>Largura do campo (m)<input type="number" min="1" max="8" step="0.1" value={customWidth} onChange={(event) => setCustomWidth(Math.max(1, Math.min(8, Number(event.target.value) || 1)))} /></label>
+                <label>Profundidade do campo (m)<input type="number" min="1" max="8" step="0.1" value={customDepth} onChange={(event) => setCustomDepth(Math.max(1, Math.min(8, Number(event.target.value) || 1)))} /></label>
+                <span>DIMENSÕES SALVAS NO PROJETO</span>
+              </div>
+            )}
             <div className="viewport">
               <Canvas shadows dpr={[1, 1.6]}>
                 <ArenaScene state={robotState} config={robotConfig} arena={arena} />
