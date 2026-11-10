@@ -318,7 +318,7 @@ export default function App() {
     return () => cancelAnimationFrame(frame)
   }, [status, advanceOneTick])
 
-  const sensorSnapshot = readSensorSnapshot(robotState, arena)
+  const sensorSnapshot = robotConfig.sensorMounts[0] ? readSensorSnapshot(robotState, arena, robotConfig.sensorMounts[0]) : readSensorSnapshot(robotState, arena)
   const averageSpeed = Math.round((Math.abs(robotState.leftSpeedMmS) + Math.abs(robotState.rightSpeedMmS)) / 2)
   const heading = ((robotState.heading * 180 / Math.PI) % 360 + 360) % 360
 
@@ -344,6 +344,10 @@ export default function App() {
           ...readSensorSnapshot(initial, arena),
           motorPorts: { left: robotConfig.leftMotorPort, right: robotConfig.rightMotorPort },
           sensorMounts: robotConfig.sensorMounts,
+          sensorReadings: Object.fromEntries(robotConfig.sensorMounts.map((mount) => [
+            mount.port,
+            readSensorSnapshot(initial, arena, mount),
+          ])),
         },
         addLog,
         30_000,
