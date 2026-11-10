@@ -391,7 +391,7 @@ export default function App() {
           ])),
         },
         addLog,
-        30_000,
+        20_000,
         controller.signal,
       )
       if (controller.signal.aborted) return
