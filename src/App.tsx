@@ -343,7 +343,13 @@ export default function App() {
     return () => cancelAnimationFrame(frame)
   }, [status, advanceOneTick])
 
-  const sensorSnapshot = robotConfig.sensorMounts[0] ? readSensorSnapshot(robotState, arena, robotConfig.sensorMounts[0]) : readSensorSnapshot(robotState, arena)
+  const sensorSnapshot = readSensorSnapshot(robotState, arena)
+  const colorMount = robotConfig.sensorMounts.find((sensor) => sensor.kind === 'color')
+  const distanceMount = robotConfig.sensorMounts.find((sensor) => sensor.kind === 'distance')
+  const forceMount = robotConfig.sensorMounts.find((sensor) => sensor.kind === 'force')
+  const colorReading = colorMount ? readSensorSnapshot(robotState, arena, colorMount) : null
+  const distanceReading = distanceMount ? readSensorSnapshot(robotState, arena, distanceMount) : null
+  const forceReading = forceMount ? readSensorSnapshot(robotState, arena, forceMount) : null
   const averageSpeed = Math.round((Math.abs(robotState.leftSpeedMmS) + Math.abs(robotState.rightSpeedMmS)) / 2)
   const heading = ((robotState.heading * 180 / Math.PI) % 360 + 360) % 360
 
@@ -564,9 +570,10 @@ export default function App() {
             <div className="section-heading"><div><span className="eyebrow">TELEMETRIA</span><h2>Estado do robô</h2></div><span className="telemetry-live"><span className="live-dot" /> LIVE</span></div>
             <div className="telemetry-grid">
               <div><small>HEADING</small><strong>{sensorSnapshot.headingDeg.toFixed(1)}°</strong></div>
-              <div><small>DISTÂNCIA</small><strong>{Math.round(sensorSnapshot.distanceMm)} mm</strong></div>
-              <div><small>COR</small><strong>{sensorSnapshot.color}</strong></div>
-              <div><small>REFLEXÃO</small><strong>{sensorSnapshot.reflection}%</strong></div>
+              <div><small>DISTÂNCIA · {distanceMount?.port ?? '—'}</small><strong>{distanceReading ? Math.round(distanceReading.distanceMm) + ' mm' : 'N/A'}</strong></div>
+              <div><small>COR · {colorMount?.port ?? '—'}</small><strong>{colorReading?.color ?? 'N/A'}</strong></div>
+              <div><small>REFLEXÃO</small><strong>{colorReading ? colorReading.reflection + '%' : 'N/A'}</strong></div>
+              <div><small>FORÇA · {forceMount?.port ?? '—'}</small><strong>{forceReading ? (forceReading.forcePressed ? forceReading.forceN + ' N' : 'Livre') : 'N/A'}</strong></div>
               <div><small>MOTOR {robotConfig.leftMotorPort}</small><strong>{Math.round(robotState.leftSpeedMmS)} mm/s</strong></div>
               <div><small>MOTOR {robotConfig.rightMotorPort}</small><strong>{Math.round(robotState.rightSpeedMmS)} mm/s</strong></div>
             </div>
