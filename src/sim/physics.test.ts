@@ -20,9 +20,9 @@ describe('simulation physics', () => {
   })
 
   it('stops the robot and records a collision at the field boundary', () => {
-    const initial = { ...createInitialRobot(), x: 1.5, z: 2.87 }
+    const initial = { ...createInitialRobot(), x: 1.5, z: 2.84 }
     const moving = setDriveSpeeds(initial, 500, 500, spikePrimePreset)
-    const next = stepRobot(moving, spikePrimePreset, practiceArena, 1 / 30)
+    const next = stepRobot(moving, spikePrimePreset, practiceArena, 0.05)
     expect(next.collisionCount).toBe(1)
     expect(next.leftSpeedMmS).toBe(0)
   })
