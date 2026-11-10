@@ -379,6 +379,7 @@ export default function App() {
         {
           ...readSensorSnapshot(initial, arena),
           motorPorts: { left: robotConfig.leftMotorPort, right: robotConfig.rightMotorPort },
+          robotGeometry: { wheelDiameterMm: robotConfig.wheelDiameterMm, axleTrackMm: robotConfig.axleTrackMm },
           sensorMounts: robotConfig.sensorMounts,
           sensorReadings: Object.fromEntries(robotConfig.sensorMounts.map((mount) => [
             mount.port,
