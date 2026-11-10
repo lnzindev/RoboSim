@@ -9,7 +9,9 @@
     "test": "vitest run src",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "predev": "node scripts/copy-pyodide-assets.mjs",
+    "prebuild": "node scripts/copy-pyodide-assets.mjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
