@@ -19,7 +19,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         launchOptions: {
-          args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'],
+          args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--enable-unsafe-swiftshader'],
         },
       },
     },
