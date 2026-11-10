@@ -446,7 +446,7 @@ export default function App() {
   }
 
   function exportProject() {
-    const project = createProject(code, robotConfig, arena.id as 'robosim-practice-v1' | 'robosim-custom-v1' | 'bioglow-founders-2026-27', arena.width, arena.depth)
+    const project = createProject(code, robotConfig, arena.id as 'robosim-practice-v1' | 'robosim-custom-v1' | 'bioglow-founders-2026-27', customWidth, customDepth)
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
