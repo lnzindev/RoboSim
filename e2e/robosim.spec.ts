@@ -1,0 +1,33 @@
+import { expect, test } from '@playwright/test'
+
+test('arena, editor, builder and Python runtime work in Chromium', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+
+  await page.goto('/')
+  await expect(page).toHaveTitle(/RoboSim FLL/)
+  await expect(page.getByRole('heading', { name: 'Arena de treino RoboSim' })).toBeVisible()
+  await expect(page.locator('canvas')).toBeVisible()
+  await expect(page.locator('.monaco-editor').first()).toBeVisible()
+
+  await page.getByRole('button', { name: /Configuração do robô/ }).click()
+  await expect(page.getByText('Sensores montados')).toBeVisible()
+  await page.getByRole('button', { name: 'Cor', exact: true }).click()
+  await expect(page.getByText('4/10')).toHaveCount(0)
+  await expect(page.locator('.sensor-row')).toHaveCount(3)
+
+  await page.getByLabel('Selecionar arena').selectOption('robosim-custom-v1')
+  await expect(page.getByRole('heading', { name: 'Arena personalizada' })).toBeVisible()
+  const widthInput = page.getByLabel('Largura do campo (m)')
+  await widthInput.fill('5')
+  await expect(widthInput).toHaveValue('5')
+
+  await page.getByLabel('Selecionar arena').selectOption('robosim-practice-v1')
+  await page.getByRole('button', { name: 'Executar código' }).click()
+  await expect(page.locator('.console-output')).toContainText('Programa concluído. Motores parados.', {
+    timeout: 100_000,
+  })
+  await expect(page.getByText('AGUARDANDO EXECUÇÃO')).toBeVisible()
+
+  expect(pageErrors).toEqual([])
+})
