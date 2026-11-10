@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import * as THREE from 'three'
 import { customArena, practiceArena } from './sim/arena'
+import { bioglowFounders2026 } from './sim/seasons/bioglow-founders-2026'
 import { collectMissionEvents } from './sim/scoring'
 import { readSensorSnapshot } from './sim/sensors'
 import { FIXED_STEP_SECONDS, createInitialRobot, setDriveSpeeds, stepRobot, stopRobot } from './sim/physics'
@@ -118,10 +119,10 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
       <Grid
         position={[0, 0.001, 0]}
         args={[arena.width, arena.depth]}
-        cellSize={0.15}
+        cellSize={arena.cellSize ?? 0.15}
         cellThickness={0.55}
         cellColor="#41645d"
-        sectionSize={0.5}
+        sectionSize={arena.cellSize ? 1 : 0.5}
         sectionColor="#6f9681"
         fadeDistance={7}
         infiniteGrid={false}
@@ -136,12 +137,20 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
       </mesh>
       <mesh position={[-arena.width / 2, 0.025, 0]}>
         <boxGeometry args={[0.035, 0.05, arena.depth]} />
-        <meshStandardMaterial color="#eee8d9" />
+        <meshStandardMaterial color={arena.seasonLabel ? '#d95755' : '#eee8d9'} />
       </mesh>
       <mesh position={[arena.width / 2, 0.025, 0]}>
         <boxGeometry args={[0.035, 0.05, arena.depth]} />
-        <meshStandardMaterial color="#eee8d9" />
+        <meshStandardMaterial color={arena.seasonLabel ? '#548fd2' : '#eee8d9'} />
       </mesh>
+      {arena.launchZones?.map((zone) => (
+        <mesh key={zone.id}
+          position={[zone.x - arena.width / 2, 0.006, zone.z - arena.depth / 2]}
+          rotation={[Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[zone.radius, 40, zone.startAngle, Math.PI / 2]} />
+          <meshStandardMaterial color={zone.color} transparent opacity={0.24} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
       {arena.obstacles.map((obstacle) => (
         <mesh
           key={obstacle.id}
@@ -209,7 +218,7 @@ export default function App() {
   const [customWidth, setCustomWidth] = useState(() => loadSavedNumber('robosim:custom-width', 4))
   const [customDepth, setCustomDepth] = useState(() => loadSavedNumber('robosim:custom-depth', 3))
   const arena = useMemo(
-    () => arenaId === customArena.id ? { ...customArena, width: customWidth, depth: customDepth } : practiceArena,
+    () => arenaId === customArena.id ? { ...customArena, width: customWidth, depth: customDepth } : arenaId === bioglowFounders2026.id ? bioglowFounders2026 : practiceArena,
     [arenaId, customWidth, customDepth],
   )
   const [robotState, setRobotState] = useState<RobotState>(createInitialRobot)
@@ -437,7 +446,7 @@ export default function App() {
   }
 
   function exportProject() {
-    const project = createProject(code, robotConfig, arena.id as 'robosim-practice-v1' | 'robosim-custom-v1', arena.width, arena.depth)
+    const project = createProject(code, robotConfig, arena.id as 'robosim-practice-v1' | 'robosim-custom-v1' | 'bioglow-founders-2026-27', arena.width, arena.depth)
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -526,8 +535,8 @@ export default function App() {
         <section className="left-column">
           <div className="sim-panel">
             <div className="panel-heading">
-              <div><span className="eyebrow">AMBIENTE DE TESTE · NÃO OFICIAL</span><h1>{arena.name}</h1></div>
-              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><select className="arena-select" aria-label="Selecionar arena" value={arena.id} onChange={(event) => setArenaId(event.target.value)}><option value="robosim-practice-v1">FLL treino</option><option value="robosim-custom-v1">Arena livre</option></select><span>{arena.width} × {arena.depth} M</span></div>
+              <div><span className="eyebrow">{arena.seasonLabel ? 'TEMPORADA · REFERÊNCIA DE CAMPO' : 'AMBIENTE DE TESTE · NÃO OFICIAL'}</span><h1>{arena.name}</h1></div>
+              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><select className="arena-select" aria-label="Selecionar arena" value={arena.id} onChange={(event) => setArenaId(event.target.value)}><option value="bioglow-founders-2026-27">BIOGLOW 26/27</option><option value="robosim-practice-v1">FLL treino</option><option value="robosim-custom-v1">Arena livre</option></select><span>{arena.width} × {arena.depth} M</span></div>
             </div>
             {arena.id === customArena.id && (
               <div className="arena-size-settings">
@@ -546,7 +555,7 @@ export default function App() {
             <div className="sim-footer">
               <div className="metric"><Gauge size={16} /><div><small>VELOCIDADE MÉDIA</small><strong>{averageSpeed} <i>MM/S</i></strong></div></div>
               <div className="metric"><Timer size={16} /><div><small>TEMPO RESTANTE</small><strong>{formatClock(remaining)}</strong></div></div>
-              <div className="metric"><Activity size={16} /><div><small>PONTUAÇÃO DEMO</small><strong>{missionScore} <i>PTS</i></strong></div></div>
+              <div className="metric"><Activity size={16} /><div><small>{arena.missions?.length ? 'PONTUAÇÃO OFICIAL' : 'PONTUAÇÃO DEMO'}</small><strong>{arena.missions?.length ? '—' : missionScore + ' PTS'}</strong></div></div>
             </div>
           </div>
 
@@ -611,9 +620,19 @@ export default function App() {
           </section>
 
           <section className="missions-panel">
-            <div className="section-heading"><div><span className="eyebrow">OBJETIVOS DA ARENA</span><h2>Missões de demonstração</h2></div><span className="demo-tag">DEMO</span></div>
-            <div className="mission-list">
-              {arena.targets.length === 0 ? <p className="empty-missions">Arena livre: sem missões ou pontuação automática.</p> : arena.targets.map((target) => {
+            <div className="section-heading"><div><span className="eyebrow">OBJETIVOS DA ARENA</span><h2>{arena.missions?.length ? 'Missões BIOGLOW' : 'Missões de demonstração'}</h2></div><span className="demo-tag">{arena.missions?.length ? 'REFERÊNCIA' : 'DEMO'}</span></div>
+            <div className={arena.missions?.length ? 'mission-list season-mission-list' : 'mission-list'}>
+              {arena.missions?.length ? (
+                <>
+                  <p className="season-disclaimer">15 missões identificadas. Modelos 3D e pontuação oficial ainda não calibrados.</p>
+                  {arena.missions.map((mission) => (
+                    <div className="season-mission" key={mission.id}>
+                      <span>{mission.id.toUpperCase()}</span>
+                      <div><strong>{mission.name}</strong><small>{mission.description}</small></div>
+                    </div>
+                  ))}
+                </>
+              ) : arena.targets.length === 0 ? <p className="empty-missions">Arena livre: sem missões ou pontuação automática.</p> : arena.targets.map((target) => {
                 const done = completedMissions.includes(target.id)
                 return <div className={done ? 'mission-item completed' : 'mission-item'} key={target.id}>
                   <span className="mission-color" style={{ background: target.color }} />
