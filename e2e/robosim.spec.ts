@@ -13,7 +13,7 @@ test('arena, editor, builder and Python runtime work in Chromium', async ({ page
   await page.getByRole('button', { name: /Configuração do robô/ }).click()
   await expect(page.getByText('Sensores montados')).toBeVisible()
   await page.getByRole('button', { name: 'Cor', exact: true }).click()
-  await expect(page.getByText('4/10')).toHaveCount(0)
+  await expect(page.getByText('3/10')).toBeVisible()
   await expect(page.locator('.sensor-row')).toHaveCount(3)
 
   await page.getByLabel('Selecionar arena').selectOption('robosim-custom-v1')
