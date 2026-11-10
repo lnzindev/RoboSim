@@ -160,7 +160,7 @@ workerScope.onmessage = async (event) => {
   try {
     workerScope.postMessage({ type: 'loading', message: 'Carregando o runtime Python (Pyodide)...' })
     pyodidePromise ??= loadPyodide({
-      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/',
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/',
       stdout: (message: string) => workerScope.postMessage({ type: 'stdout', message }),
       stderr: (message: string) => workerScope.postMessage({ type: 'stdout', message }),
     })
