@@ -15,18 +15,18 @@ export const RobotConfigSchema = z.object({
 export const ProjectSchema = z.object({
   schemaVersion: z.literal(1),
   name: z.string().min(1).max(80),
-  arenaId: z.string().min(1).max(100),
+  arenaId: z.enum(['robosim-practice-v1', 'robosim-custom-v1']),
   robot: RobotConfigSchema,
   code: z.string().max(100_000),
 })
 
 export type ProjectDocument = z.infer<typeof ProjectSchema>
 
-export function createProject(code: string, robot = spikePrimePreset): ProjectDocument {
+export function createProject(code: string, robot = spikePrimePreset, arenaId: ProjectDocument['arenaId'] = 'robosim-practice-v1'): ProjectDocument {
   return {
     schemaVersion: 1,
     name: 'Meu projeto RoboSim',
-    arenaId: 'robosim-practice-v1',
+    arenaId,
     robot,
     code,
   }
