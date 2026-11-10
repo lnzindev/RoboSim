@@ -2,6 +2,7 @@ import type { SensorMount, SensorSnapshot } from '../sim/types'
 
 export type RuntimeEnvironment = SensorSnapshot & {
   motorPorts: { left: string; right: string }
+  robotGeometry: { wheelDiameterMm: number; axleTrackMm: number }
   sensorMounts: SensorMount[]
   sensorReadings: Record<string, SensorSnapshot>
 }
