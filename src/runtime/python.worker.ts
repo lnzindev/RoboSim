@@ -166,6 +166,7 @@ workerScope.onmessage = async (event) => {
       stderr: (message: string) => workerScope.postMessage({ type: 'stdout', message }),
     })
     const pyodide = await pyodidePromise
+    workerScope.postMessage({ type: 'ready', message: 'Runtime Python carregado. Executando programa...' })
     pyodide.globals.set('_robosim_env_json', JSON.stringify(event.data.environment))
     await pyodide.runPythonAsync(PYBRICKS_SHIM + '\n' + event.data.code)
     const serialized = pyodide.runPython("json.dumps(_robosim_commands)")
