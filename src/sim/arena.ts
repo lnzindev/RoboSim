@@ -1,4 +1,5 @@
 import type { ArenaDefinition } from './types'
+import { bioglowFounders2026 } from './seasons/bioglow-founders-2026'
 
 export const practiceArena: ArenaDefinition = {
   id: 'robosim-practice-v1',
@@ -29,5 +30,6 @@ export const customArena: ArenaDefinition = {
 }
 
 export function getArenaById(id: string): ArenaDefinition {
+  if (id === bioglowFounders2026.id) return bioglowFounders2026
   return id === customArena.id ? customArena : practiceArena
 }
