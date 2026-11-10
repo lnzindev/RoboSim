@@ -2,6 +2,51 @@
 
 > Documento mestre desta PR. Esta branch evolui o protótipo inicial para um simulador FLL utilizável. Recursos que dependam de fidelidade física ou compatibilidade de hardware ainda não validada serão identificados como experimentais.
 
+## Progresso desta PR
+
+Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A existência de testes não significa que eles já foram executados.
+
+### Entregue nesta branch
+- [x] Fundação React + TypeScript + Vite e scripts de desenvolvimento, typecheck, teste e build.
+- [x] Separação inicial entre UI, simulação, dispositivos, dados de arena, projetos e runtime.
+- [x] Pipeline GitHub Actions para instalação, typecheck, Vitest e build.
+- [x] Campo 3D com câmera orbital e vista superior.
+- [x] Arena de treino com obstáculos/alvos demonstrativos e arena livre redimensionável.
+- [x] Preset de referência BIOGLOW 2026–2027 com malha de 20 cm, dimensões 2,0 × 1,2 m, duas zonas visuais de lançamento e catálogo das 15 missões.
+- [x] Movimento diferencial com passo fixo, limites do campo e detecção simplificada de obstáculos.
+- [x] Controles de iniciar, pausar, continuar, passo único, parar, reset e relógio de 2min30s.
+- [x] Configuração inicial de robô, dimensões de chassis, motores e portas.
+- [x] Montagem configurável de sensores de cor, distância e força, incluindo porta, posição e rotação.
+- [x] Validação de configuração/projeto com Zod e proteção contra conflito de portas.
+- [x] Editor Monaco com syntax highlighting Python.
+- [x] Pyodide em Worker com captura de saída, limite de tempo, cancelamento e limite de comandos.
+- [x] Subconjunto documentado da API Pybricks: Motor, DriveBase, portas, parâmetros, hub e sensores.
+- [x] Leituras de sensores por snapshot inicial, considerando a pose configurada do sensor.
+- [x] Exportação/importação JSON e salvamento local.
+- [x] Testes unitários escritos para física, DriveBase, sensores, pontuação demonstrativa e schema de projetos.
+
+### Parcial
+- [~] Compatibilidade Pybricks: API parcial; não é firmware MicroPython e não tem semântica completa de bloqueio, encoder ou PID.
+- [~] Física: movimento e colisões simplificados; sem aceleração, atrito calibrado, inércia, geometria detalhada ou colisão por peça.
+- [~] Construtor: chassis, motores e sensores configuráveis; ainda não existe catálogo completo de peças LEGO nem montagem por conectores.
+- [~] Sensores: leituras determinísticas a partir do snapshot do início do programa; não são atualizadas dinamicamente entre instruções Python.
+- [~] BIOGLOW: campo e missões são referência visual/informativa; modelos de missão, condições de arbitragem e pontuação oficial ainda não estão implementados.
+- [~] Segurança: Worker com timeout/cancelamento e módulos externos bloqueados, mas isso não equivale a uma sandbox forte para execução de código hostil.
+- [~] CI: workflow criado; execução e resultado precisam ser confirmados nos checks da PR.
+
+### Pendente
+- [ ] Execução Python intercalada com o tempo de simulação, com leituras bloqueantes de sensores.
+- [ ] Motores com encoder/ângulo/velocidade e comportamento de parada realista.
+- [ ] Aceleração, atrito, inércia e calibração da física contra robô real.
+- [ ] Builder com catálogo de peças, conectores, acessórios e montagem modular.
+- [ ] Modelos 3D das missões BIOGLOW e pontuação validada pelas regras/updates oficiais.
+- [ ] Replay completo, timeline de eventos e telemetria exportável.
+- [ ] Verificação visual em navegador e acessibilidade.
+- [ ] Build de produção e suíte de testes efetivamente executados e aprovados.
+
+### Verificação
+Na sessão de implementação, a integração GitHub retornou a branch adiantada em relação a `main`, mas não retornou workflow runs nem status checks para o commit consultado. O ambiente de execução desta sessão não conseguiu obter o repositório por rede para rodar npm localmente. Portanto, **typecheck, testes, build e navegador permanecem não verificados** até que a CI da PR seja executada e seus resultados sejam inspecionados.
+
 ## Objetivo
 Construir uma aplicação web em que equipes possam montar robôs LEGO virtuais, escrever Python com uma camada compatível com Pybricks, executar programas na arena 3D e observar motores, sensores, colisões, telemetria e resultados de missões.
 
@@ -103,7 +148,7 @@ Construir uma aplicação web em que equipes possam montar robôs LEGO virtuais,
 - CI: GitHub Actions com typecheck, testes e build.
 
 ## Critérios de aceite
-1. `npm ci` instala sem arquivos locais não versionados.
+1. `npm install` instala as dependências listadas no `package.json`. Um lockfile precisa ser adicionado antes de exigir `npm ci`.
 2. `npm run typecheck` termina sem erros.
 3. `npm test` termina sem falhas.
 4. `npm run build` gera a aplicação de produção.
