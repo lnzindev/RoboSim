@@ -44,7 +44,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .sensor-builder { padding: 0 17px 16px; }
 .sensor-builder-heading { display: flex; align-items: center; justify-content: space-between; margin: 0 0 9px; color: #d9e5ed; font-size: 10px; }
 .sensor-builder-heading span { color: #8194a6; font: 9px "DM Mono", Consolas, monospace; }
-.sensor-row { display: flex; align-items: center; gap: 9px; margin-top: 7px; padding: 8px 9px; border: 1px solid #ffffff10; border-radius: 7px; background: #0c1520; }
+.sensor-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 7px; padding: 8px 9px; border: 1px solid #ffffff10; border-radius: 7px; background: #0c1520; }
 .sensor-row strong { flex: 1; color: #b9c8d5; font-size: 10px; }
 .sensor-row select { width: 62px; padding: 6px; border: 1px solid #ffffff18; border-radius: 5px; color: #dce7f0; background: #142131; font: 10px "DM Mono", Consolas, monospace; }
 .sensor-kind { width: 8px; height: 8px; border-radius: 3px; }
@@ -52,6 +52,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .sensor-kind.distance { background: #65a9ee; }
 .sensor-kind.force { background: #e8b45b; }
 .remove-sensor { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #ffffff12; border-radius: 5px; color: #aab9c6; background: #182638; cursor: pointer; }
+.sensor-geometry { flex: 0 0 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.sensor-geometry label { display: flex; align-items: center; gap: 5px; color: #74899c; font: 8px "DM Mono", Consolas, monospace; }
+.sensor-geometry input { width: 100%; min-width: 0; padding: 5px; border: 1px solid #ffffff14; border-radius: 5px; outline: none; color: #dce7f0; background: #101c2a; font: 9px "DM Mono", Consolas, monospace; }
 .sensor-add-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
 .sensor-add-actions button { display: flex; align-items: center; gap: 5px; padding: 7px 9px; border: 1px solid #3dbe9550; border-radius: 6px; color: #76dab7; background: #16372f66; font-size: 9px; cursor: pointer; }
 .sensor-add-actions button:disabled { opacity: .4; cursor: not-allowed; }
