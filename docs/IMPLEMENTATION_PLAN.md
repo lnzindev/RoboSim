@@ -9,7 +9,7 @@ Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A e
 ### Entregue nesta branch
 - [x] Fundação React + TypeScript + Vite e scripts de desenvolvimento, typecheck, teste e build.
 - [x] Separação inicial entre UI, simulação, dispositivos, dados de arena, projetos e runtime.
-- [x] Pipeline GitHub Actions para instalação, typecheck, Vitest e build.
+- [x] Pipeline GitHub Actions para instalação, typecheck, Vitest e build (com disparo manual habilitado; execução ainda sem confirmação).
 - [x] Campo 3D com câmera orbital e vista superior.
 - [x] Arena de treino com obstáculos/alvos demonstrativos e arena livre redimensionável.
 - [x] Preset de referência BIOGLOW 2026–2027 com malha de 20 cm, dimensões 2,0 × 1,2 m, duas zonas visuais de lançamento e catálogo das 15 missões.
@@ -176,4 +176,4 @@ Construir uma aplicação web em que equipes possam montar robôs LEGO virtuais,
 - Contas multiusuário, ranking online e backend de competição.
 
 ## Estado de validação
-Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado.
+Os checks serão atualizados somente após execução real. Criar um arquivo de configuração não conta como teste aprovado. Existem 19 casos escritos, mas typecheck, testes e build continuam pendentes de execução; a integração GitHub disponível nesta sessão não retornou workflow runs nem status checks.
