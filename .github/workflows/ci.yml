@@ -1,6 +1,7 @@
 name: RoboSim CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, 'feat/**']
   pull_request:
@@ -21,7 +22,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
       - name: TypeScript validation
         run: npm run typecheck
       - name: Unit tests
