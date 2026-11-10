@@ -48,7 +48,7 @@ assert runtime["readings"][3] > 0, "DriveBase odometry did not accumulate distan
 
 # Sensor readings should detect the yellow mission object.
 runtime["sim_x"] = -0.92
-runtime["sim_z"] = -0.56
+runtime["sim_z"] = -0.70
 assert runtime["ColorSensor"]("D").color() == runtime["Color"].YELLOW
 assert runtime["UltrasonicSensor"]("A").distance() <= 100
 
