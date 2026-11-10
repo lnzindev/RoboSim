@@ -8,6 +8,7 @@ export function executePython(
   timeoutMs = 30_000,
   signal?: AbortSignal,
 ): Promise<SimulationCommand[]> {
+  if (code.length > 100_000) return Promise.reject(new Error('O programa excede o limite de 100.000 caracteres.'))
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('./python.worker.ts', import.meta.url), { type: 'module' })
     let settled = false
