@@ -67,6 +67,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .viewport canvas { display: block; }
 .viewport-tag, .axis-tag { position: absolute; top: 13px; left: 14px; display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid #ffffff1c; border-radius: 5px; color: #acbdcc; background: #0b121ddd; font: 9px "DM Mono", Consolas, monospace; letter-spacing: .8px; pointer-events: none; }
 .axis-tag { top: auto; right: 14px; bottom: 13px; left: auto; color: #82dfbb; }
+.camera-toggle { position: absolute; top: 13px; right: 14px; display: flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid #ffffff1c; border-radius: 5px; color: #b7c7d4; background: #0b121ddd; font: 8px "DM Mono", Consolas, monospace; letter-spacing: .5px; cursor: pointer; }
+.camera-toggle:hover { color: #72dfb9; border-color: #4bd9a866; }
 .sim-footer { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
 .metric { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 15px 17px; color: var(--mint); }
 .metric + .metric { border-left: 1px solid var(--line); }
