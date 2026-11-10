@@ -30,7 +30,7 @@ export const RobotConfigSchema = z.object({
 export const ProjectSchema = z.object({
   schemaVersion: z.literal(1),
   name: z.string().min(1).max(80),
-  arenaId: z.enum(['robosim-practice-v1', 'robosim-custom-v1']),
+  arenaId: z.enum(['robosim-practice-v1', 'robosim-custom-v1', 'bioglow-founders-2026-27']),
   arenaWidth: z.number().min(1).max(8).default(4),
   arenaDepth: z.number().min(1).max(8).default(3),
   robot: RobotConfigSchema,
