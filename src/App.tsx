@@ -119,7 +119,7 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[0, 0.025, arena.depth / 2]}>
-        <boxGeometry args={[practiceArena.width, 0.05, 0.035]} />
+        <boxGeometry args={[arena.width, 0.05, 0.035]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[-arena.width / 2, 0.025, 0]}>
@@ -127,7 +127,7 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[arena.width / 2, 0.025, 0]}>
-        <boxGeometry args={[0.035, 0.05, practiceArena.depth]} />
+        <boxGeometry args={[0.035, 0.05, arena.depth]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       {arena.obstacles.map((obstacle) => (
