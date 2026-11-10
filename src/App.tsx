@@ -168,7 +168,11 @@ function loadSavedCode(): string {
   try { return localStorage.getItem('robosim:code') || STARTER_CODE } catch { return STARTER_CODE }
 }
 
-function loadSavedArena(): string {\n  try { return localStorage.getItem('robosim:arena') || practiceArena.id } catch { return practiceArena.id }\n}\n\nfunction loadSavedConfig(): RobotConfig {
+function loadSavedArena(): string {
+  try { return localStorage.getItem('robosim:arena') || practiceArena.id } catch { return practiceArena.id }
+}
+
+function loadSavedConfig(): RobotConfig {
   try {
     const raw = localStorage.getItem('robosim:robot')
     return raw ? RobotConfigSchema.parse(JSON.parse(raw)) : spikePrimePreset
@@ -179,7 +183,9 @@ function loadSavedArena(): string {\n  try { return localStorage.getItem('robosi
 
 export default function App() {
   const [code, setCode] = useState(loadSavedCode)
-  const [robotConfig, setRobotConfig] = useState<RobotConfig>(loadSavedConfig)\n  const [arenaId, setArenaId] = useState(loadSavedArena)\n  const arena = arenaId === customArena.id ? customArena : practiceArena
+  const [robotConfig, setRobotConfig] = useState<RobotConfig>(loadSavedConfig)
+  const [arenaId, setArenaId] = useState(loadSavedArena)
+  const arena = arenaId === customArena.id ? customArena : practiceArena
   const [robotState, setRobotState] = useState<RobotState>(createInitialRobot)
   const [status, setStatus] = useState<RunStatus>('idle')
   const [remaining, setRemaining] = useState(150)
@@ -202,7 +208,8 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('robosim:code', code)
-      localStorage.setItem('robosim:robot', JSON.stringify(robotConfig))\n      localStorage.setItem('robosim:arena', arena.id)
+      localStorage.setItem('robosim:robot', JSON.stringify(robotConfig))
+      localStorage.setItem('robosim:arena', arena.id)
     } catch {
       addLog('Não foi possível salvar automaticamente neste navegador.')
     }
@@ -399,6 +406,7 @@ export default function App() {
       const project = parseProject(JSON.parse(await file.text()))
       setCode(project.code)
       setRobotConfig(project.robot)
+      setArenaId(project.arenaId)
       addLog(`Projeto importado: ${project.name}`)
     } catch (error) {
       addLog(`Arquivo inválido: ${error instanceof Error ? error.message : String(error)}`)
@@ -434,7 +442,7 @@ export default function App() {
           <div className="sim-panel">
             <div className="panel-heading">
               <div><span className="eyebrow">AMBIENTE DE TESTE · NÃO OFICIAL</span><h1>{arena.name}</h1></div>
-              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><span>{arena.width} × {arena.depth} M</span></div>
+              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><select className="arena-select" aria-label="Selecionar arena" value={arena.id} onChange={(event) => setArenaId(event.target.value)}><option value="robosim-practice-v1">FLL treino</option><option value="robosim-custom-v1">Arena livre</option></select><span>{arena.width} × {arena.depth} M</span></div>
             </div>
             <div className="viewport">
               <Canvas shadows dpr={[1, 1.6]}>
@@ -481,7 +489,7 @@ export default function App() {
           <section className="missions-panel">
             <div className="section-heading"><div><span className="eyebrow">OBJETIVOS DA ARENA</span><h2>Missões de demonstração</h2></div><span className="demo-tag">DEMO</span></div>
             <div className="mission-list">
-              {arena.targets.map((target) => {
+              {arena.targets.length === 0 ? <p className="empty-missions">Arena livre: sem missões ou pontuação automática.</p> : arena.targets.map((target) => {
                 const done = completedMissions.includes(target.id)
                 return <div className={done ? 'mission-item completed' : 'mission-item'} key={target.id}>
                   <span className="mission-color" style={{ background: target.color }} />
