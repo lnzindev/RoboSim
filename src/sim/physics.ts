@@ -38,13 +38,17 @@ export function stepRobot(
   const heading = state.heading + angularRadiansPerSecond * dt
   const candidateX = state.x + Math.sin(heading) * linearMetersPerSecond * dt
   const candidateZ = state.z + Math.cos(heading) * linearMetersPerSecond * dt
-  const minX = ROBOT_RADIUS_METERS
-  const maxX = arena.width - ROBOT_RADIUS_METERS
-  const minZ = ROBOT_RADIUS_METERS
-  const maxZ = arena.depth - ROBOT_RADIUS_METERS
+  const robotRadius = Math.max(
+    ROBOT_RADIUS_METERS,
+    Math.hypot(config.chassisWidthMm, config.chassisLengthMm) / 2000,
+  )
+  const minX = robotRadius
+  const maxX = arena.width - robotRadius
+  const minZ = robotRadius
+  const maxZ = arena.depth - robotRadius
   const hitWall = candidateX < minX || candidateX > maxX || candidateZ < minZ || candidateZ > maxZ
   const hitObstacle = arena.obstacles.some((obstacle) =>
-    overlapsObstacle(candidateX, candidateZ, ROBOT_RADIUS_METERS, obstacle),
+    overlapsObstacle(candidateX, candidateZ, robotRadius, obstacle),
   )
 
   if (hitWall || hitObstacle) {
