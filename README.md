@@ -6,7 +6,7 @@
 
 ## Requisitos
 
-- Node.js 20 ou superior
+- Node.js 22.12 ou superior
 - npm 10 ou superior
 - Navegador moderno com WebGL 2 e Web Workers
 - Conexão com a internet na primeira execução do runtime para carregar o pacote Pyodide do CDN
@@ -34,7 +34,7 @@ npm run build
 - Robô diferencial virtual com chassis configurável, diâmetro de roda, distância entre rodas, motores e sensores montados por porta/posição/orientação.
 - Física determinística em passo fixo, limites do campo e colisão simplificada com obstáculos.
 - Editor Monaco com realce de sintaxe Python.
-- Pyodide em Web Worker, com timeout e cancelamento por encerramento do Worker.
+- Pyodide 0.29.5 em Web Worker, com timeout e cancelamento por encerramento do Worker.
 - Camada de compatibilidade para `Motor`, `DriveBase`, `Port`, `Stop`, `wait`, hub e sensores básicos.
 - Sensores virtuais de distância, cor/reflexão e força com leituras relativas à montagem; IMU com heading.
 - Vista orbital 3D e vista superior para alinhamento de trajetórias.
