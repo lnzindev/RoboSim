@@ -1,0 +1,157 @@
+import { loadPyodide } from 'pyodide'
+import type { SimulationCommand } from '../sim/types'
+import type { WorkerRequest, WorkerResponse } from './protocol'
+
+const workerScope = self as unknown as {
+  onmessage: ((event: MessageEvent<WorkerRequest>) => void) | null
+  postMessage: (message: WorkerResponse) => void
+}
+
+const PYBRICKS_SHIM = [
+  'import sys, types, json, math, builtins',
+  '__robosim_commands = []',
+  '__robosim_env = json.loads(__robosim_env_json)',
+  'class Port:',
+  '    A, B, C, D, E, F = "A", "B", "C", "D", "E", "F"',
+  'class Stop:',
+  '    COAST, BRAKE, HOLD = "coast", "brake", "hold"',
+  'class Direction:',
+  '    CLOCKWISE, COUNTERCLOCKWISE = 1, -1',
+  'class Color:',
+  '    BLACK, BLUE, GREEN, YELLOW, RED, WHITE = "BLACK", "BLUE", "GREEN", "YELLOW", "RED", "WHITE"',
+  'class Axis:',
+  '    X, Y, Z = 0, 1, 2',
+  'class Button:',
+  '    CENTER, LEFT, RIGHT = "center", "left", "right"',
+  'class Motor:',
+  '    def __init__(self, port, positive_direction=Direction.CLOCKWISE, gears=None):',
+  '        self.port = str(port)',
+  '        self.direction = positive_direction',
+  '    def run(self, speed):',
+  '        __robosim_commands.append({"type":"motor","port":self.port,"speedDegS":float(speed)*self.direction})',
+  '    def run_time(self, speed, time, then=Stop.COAST, wait=True):',
+  '        __robosim_commands.append({"type":"motorTimed","port":self.port,"speedDegS":float(speed)*self.direction,"durationMs":max(0,int(time))})',
+  '    def run_angle(self, speed, rotation_angle, then=Stop.COAST, wait=True):',
+  '        duration = abs(float(rotation_angle) / float(speed) * 1000) if speed else 0',
+  '        __robosim_commands.append({"type":"motorTimed","port":self.port,"speedDegS":float(speed)*self.direction,"durationMs":duration})',
+  '    def run_target(self, speed, target_angle, then=Stop.COAST, wait=True):',
+  '        self.run_angle(speed, target_angle, then, wait)',
+  '    def dc(self, duty):',
+  '        self.run(float(duty) * 10)',
+  '    def stop(self):',
+  '        self.run(0)',
+  '    def brake(self):',
+  '        self.run(0)',
+  '    def hold(self):',
+  '        self.run(0)',
+  '    def angle(self):',
+  '        return 0',
+  '    def speed(self):',
+  '        return 0',
+  '    def reset_angle(self, angle=0):',
+  '        return None',
+  'class DriveBase:',
+  '    def __init__(self, left_motor, right_motor, wheel_diameter, axle_track):',
+  '        self.left_motor, self.right_motor = left_motor, right_motor',
+  '        self.wheel_diameter, self.axle_track = float(wheel_diameter), float(axle_track)',
+  '        self.max_speed, self.max_turn_rate = 300.0, 90.0',
+  '    def settings(self, straight_speed, straight_acceleration, turn_rate, turn_acceleration):',
+  '        self.max_speed, self.max_turn_rate = abs(float(straight_speed)), abs(float(turn_rate))',
+  '    def drive(self, speed, turn_rate):',
+  '        omega = math.radians(float(turn_rate))',
+  '        half_track = self.axle_track / 2',
+  '        left = float(speed) - omega * half_track',
+  '        right = float(speed) + omega * half_track',
+  '        __robosim_commands.append({"type":"drive","leftMmS":left,"rightMmS":right})',
+  '    def straight(self, distance):',
+  '        distance = float(distance)',
+  '        speed = self.max_speed if distance >= 0 else -self.max_speed',
+  '        duration = abs(distance / self.max_speed * 1000) if self.max_speed else 0',
+  '        __robosim_commands.append({"type":"drive","leftMmS":speed,"rightMmS":speed})',
+  '        __robosim_commands.append({"type":"wait","durationMs":duration})',
+  '        __robosim_commands.append({"type":"stop"})',
+  '    def turn(self, angle):',
+  '        angle = float(angle)',
+  '        rate = self.max_turn_rate if angle >= 0 else -self.max_turn_rate',
+  '        wheel_speed = math.radians(rate) * self.axle_track / 2',
+  '        duration = abs(angle / rate * 1000) if rate else 0',
+  '        __robosim_commands.append({"type":"drive","leftMmS":-wheel_speed,"rightMmS":wheel_speed})',
+  '        __robosim_commands.append({"type":"wait","durationMs":duration})',
+  '        __robosim_commands.append({"type":"stop"})',
+  '    def stop(self):',
+  '        __robosim_commands.append({"type":"stop"})',
+  '    def state(self):',
+  '        return (0, 0)',
+  '    def distance(self):',
+  '        return 0',
+  '    def angle(self):',
+  '        return 0',
+  'class ColorSensor:',
+  '    def __init__(self, port): self.port = str(port)',
+  '    def color(self): return getattr(Color, __robosim_env.get("color", "BLACK"), Color.BLACK)',
+  '    def reflection(self): return int(__robosim_env.get("reflection", 8))',
+  '    def ambient(self): return 10',
+  'class UltrasonicSensor:',
+  '    def __init__(self, port): self.port = str(port)',
+  '    def distance(self): return int(__robosim_env.get("distanceMm", 2000))',
+  '    def presence(self): return self.distance() < 250',
+  'class ForceSensor:',
+  '    def __init__(self, port): self.port = str(port)',
+  '    def pressed(self): return bool(__robosim_env.get("forcePressed", False))',
+  '    def force(self): return float(__robosim_env.get("forceN", 0))',
+  'class _IMU:',
+  '    def heading(self): return float(__robosim_env.get("headingDeg", 0))',
+  '    def up(self): return Axis.Z',
+  'class _Display:',
+  '    def text(self, value): print("[HUB]", value)',
+  'class _Speaker:',
+  '    def beep(self, frequency=500, duration=100): print("[HUB] beep", frequency, duration)',
+  'class _HubLight:',
+  '    def on(self, color): return None',
+  'class PrimeHub:',
+  '    def __init__(self):',
+  '        self.imu, self.display, self.speaker, self.light = _IMU(), _Display(), _Speaker(), _HubLight()',
+  'def wait(milliseconds):',
+  '    __robosim_commands.append({"type":"wait","durationMs":max(0,float(milliseconds))})',
+  'class StopWatch:',
+  '    def time(self): return 0',
+  'pybricks = types.ModuleType("pybricks")',
+  'parameters = types.ModuleType("pybricks.parameters")',
+  'for item in (Port, Stop, Direction, Color, Axis, Button): setattr(parameters, item.__name__, item)',
+  'pupdevices = types.ModuleType("pybricks.pupdevices")',
+  'for item in (Motor, ColorSensor, UltrasonicSensor, ForceSensor): setattr(pupdevices, item.__name__, item)',
+  'robotics = types.ModuleType("pybricks.robotics"); robotics.DriveBase = DriveBase',
+  'hubs = types.ModuleType("pybricks.hubs"); hubs.PrimeHub = PrimeHub',
+  'tools = types.ModuleType("pybricks.tools"); tools.wait = wait; tools.StopWatch = StopWatch',
+  'sys.modules.update({"pybricks":pybricks,"pybricks.parameters":parameters,"pybricks.pupdevices":pupdevices,"pybricks.robotics":robotics,"pybricks.hubs":hubs,"pybricks.tools":tools})',
+  '_original_import = builtins.__import__',
+  'def _restricted_import(name, globals=None, locals=None, fromlist=(), level=0):',
+  '    if name.split(".")[0] in {"js","pyodide","micropip","socket","urllib","http","subprocess","ctypes","ftplib","ssl"}:',
+  '        raise ImportError("Módulo indisponível no runtime RoboSim: " + name)',
+  '    return _original_import(name, globals, locals, fromlist, level)',
+  'builtins.__import__ = _restricted_import',
+].join('\n')
+
+let pyodidePromise: ReturnType<typeof loadPyodide> | undefined
+
+workerScope.onmessage = async (event) => {
+  try {
+    workerScope.postMessage({ type: 'loading', message: 'Carregando o runtime Python (Pyodide)...' })
+    pyodidePromise ??= loadPyodide({
+      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/',
+      stdout: (message: string) => workerScope.postMessage({ type: 'stdout', message }),
+      stderr: (message: string) => workerScope.postMessage({ type: 'stdout', message }),
+    })
+    const pyodide = await pyodidePromise
+    pyodide.globals.set('__robosim_env_json', JSON.stringify(event.data.environment))
+    await pyodide.runPythonAsync(PYBRICKS_SHIM + '\n' + event.data.code)
+    const serialized = pyodide.runPython("json.dumps(__robosim_commands)")
+    const commands = JSON.parse(serialized as string) as SimulationCommand[]
+    workerScope.postMessage({ type: 'result', commands })
+  } catch (error) {
+    workerScope.postMessage({
+      type: 'error',
+      message: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
