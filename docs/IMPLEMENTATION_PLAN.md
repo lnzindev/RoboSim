@@ -23,7 +23,7 @@ Legenda: **[x] concluído nesta branch**, **[~] parcial**, **[ ] pendente**. A e
 - [x] Subconjunto documentado da API Pybricks: Motor, DriveBase, portas, parâmetros, hub e sensores.
 - [x] Leituras de sensores por snapshot inicial, considerando a pose configurada do sensor.
 - [x] Exportação/importação JSON e salvamento local.
-- [x] Testes unitários escritos para física, DriveBase, sensores, pontuação demonstrativa e schema de projetos.
+- [x] 19 casos de teste unitário escritos para física, DriveBase, sensores, geometria de arena, pontuação demonstrativa e schema de projetos.
 
 ### Parcial
 - [~] Compatibilidade Pybricks: API parcial; não é firmware MicroPython e não tem semântica completa de bloqueio, encoder ou PID.
