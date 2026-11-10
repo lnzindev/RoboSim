@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Grid, OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import {
-  Activity, Bot, Check, ChevronDown, Code2, Cpu, Download, Gauge, Pause,
+  Activity, Bot, Check, ChevronDown, Code2, Cpu, Download, Gauge, Pause, Plus, Trash2,
   Play, RotateCcw, Save, StepForward, Square, Timer, Upload, Wifi,
 } from 'lucide-react'
 import * as THREE from 'three'
@@ -12,7 +12,7 @@ import { customArena, practiceArena } from './sim/arena'
 import { collectMissionEvents } from './sim/scoring'
 import { readSensorSnapshot } from './sim/sensors'
 import { FIXED_STEP_SECONDS, createInitialRobot, setDriveSpeeds, stepRobot, stopRobot } from './sim/physics'
-import type { ArenaDefinition, RobotConfig, RobotState, SimulationCommand } from './sim/types'
+import type { ArenaDefinition, RobotConfig, RobotState, SensorMount, SimulationCommand } from './sim/types'
 import { motorSpeedToLinearMmS } from './sim/drivebase'
 import { spikePrimePreset } from './robot/presets'
 import { createProject, parseProject, RobotConfigSchema } from './robot/project'
@@ -63,7 +63,7 @@ function RobotModel({ state, config, arena }: { state: RobotState; config: Robot
   return (
     <group ref={group}>
       <mesh castShadow position={[0, 0.11, 0]}>
-        <boxGeometry args={[0.29, 0.16, 0.38]} />
+        <boxGeometry args={[config.chassisWidthMm / 1000, 0.16, config.chassisLengthMm / 1000]} />
         <meshStandardMaterial color="#e7edf4" roughness={0.48} />
       </mesh>
       <mesh castShadow position={[0, 0.205, -0.02]}>
@@ -84,10 +84,22 @@ function RobotModel({ state, config, arena }: { state: RobotState; config: Robot
         <boxGeometry args={[0.105, 0.07, 0.07]} />
         <meshStandardMaterial color="#e9ad48" />
       </mesh>
-      <mesh position={[0, 0.16, 0.245]}>
+      <mesh position={[0, 0.16, config.chassisLengthMm / 2000 + 0.02]}>
         <sphereGeometry args={[0.028, 12, 12]} />
         <meshStandardMaterial color="#70c9f2" emissive="#28739a" emissiveIntensity={0.4} />
       </mesh>
+      {config.sensorMounts.map((mount) => (
+        <mesh key={mount.id} castShadow
+          position={[mount.xMm / 1000, 0.19, mount.zMm / 1000]}
+          rotation={[0, mount.rotationDeg * Math.PI / 180, 0]}>
+          <boxGeometry args={[0.065, 0.045, 0.07]} />
+          <meshStandardMaterial
+            color={mount.kind === 'color' ? '#4fca91' : mount.kind === 'distance' ? '#65a9ee' : '#e8b45b'}
+            emissive={mount.kind === 'color' ? '#174b32' : mount.kind === 'distance' ? '#173d60' : '#60451a'}
+            emissiveIntensity={0.25}
+          />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -432,6 +444,40 @@ export default function App() {
     const updated = { ...robotConfig, [key]: value }
     const parsed = RobotConfigSchema.safeParse(updated)
     if (parsed.success) setRobotConfig(parsed.data)
+    else addLog(parsed.error.issues[0]?.message || 'Configuração inválida.')
+  }
+
+  function addSensor(kind: SensorMount['kind']) {
+    const occupied = new Set([
+      robotConfig.leftMotorPort,
+      robotConfig.rightMotorPort,
+      ...robotConfig.sensorMounts.map((sensor) => sensor.port),
+    ])
+    const port = (['A', 'B', 'C', 'D', 'E', 'F'] as const).find((item) => !occupied.has(item))
+    if (!port) {
+      addLog('Todas as portas do hub já estão ocupadas.')
+      return
+    }
+    const sensor: SensorMount = {
+      id: 'sensor-' + kind + '-' + Date.now(),
+      kind,
+      port,
+      xMm: 0,
+      zMm: robotConfig.chassisLengthMm / 2 + 18,
+      rotationDeg: 0,
+    }
+    updateConfig('sensorMounts', [...robotConfig.sensorMounts, sensor])
+    addLog('Sensor ' + kind + ' adicionado na porta ' + port + '.')
+  }
+
+  function updateSensor(id: string, patch: Partial<SensorMount>) {
+    updateConfig('sensorMounts', robotConfig.sensorMounts.map((sensor) =>
+      sensor.id === id ? { ...sensor, ...patch } : sensor,
+    ))
+  }
+
+  function removeSensor(id: string) {
+    updateConfig('sensorMounts', robotConfig.sensorMounts.filter((sensor) => sensor.id !== id))
   }
 
   return (
@@ -489,13 +535,36 @@ export default function App() {
               <ChevronDown size={17} className={showRobotSettings ? 'chevron open' : 'chevron'} />
             </button>
             {showRobotSettings && (
+              <>
               <div className="builder-fields">
+                <label>Largura do chassis (mm)<input type="number" min="80" max="400" value={robotConfig.chassisWidthMm} onChange={(event) => updateConfig('chassisWidthMm', Number(event.target.value))} /></label>
+                <label>Comprimento do chassis (mm)<input type="number" min="80" max="500" value={robotConfig.chassisLengthMm} onChange={(event) => updateConfig('chassisLengthMm', Number(event.target.value))} /></label>
                 <label>Diâmetro da roda (mm)<input type="number" min="20" max="200" value={robotConfig.wheelDiameterMm} onChange={(event) => updateConfig('wheelDiameterMm', Number(event.target.value))} /></label>
                 <label>Distância entre rodas (mm)<input type="number" min="40" max="300" value={robotConfig.axleTrackMm} onChange={(event) => updateConfig('axleTrackMm', Number(event.target.value))} /></label>
                 <label>Porta motor esquerdo<select value={robotConfig.leftMotorPort} onChange={(event) => updateConfig('leftMotorPort', event.target.value as RobotConfig['leftMotorPort'])}>{['A','B','C','D','E','F'].map((port) => <option key={port}>{port}</option>)}</select></label>
                 <label>Porta motor direito<select value={robotConfig.rightMotorPort} onChange={(event) => updateConfig('rightMotorPort', event.target.value as RobotConfig['rightMotorPort'])}>{['A','B','C','D','E','F'].map((port) => <option key={port}>{port}</option>)}</select></label>
                 <label>Velocidade máxima (mm/s)<input type="number" min="50" max="1500" value={robotConfig.maxSpeedMmS} onChange={(event) => updateConfig('maxSpeedMmS', Number(event.target.value))} /></label>
               </div>
+              <div className="sensor-builder">
+                <div className="sensor-builder-heading"><strong>Sensores montados</strong><span>{robotConfig.sensorMounts.length}/10</span></div>
+                {robotConfig.sensorMounts.length === 0 && <p className="empty-missions">Nenhum sensor conectado.</p>}
+                {robotConfig.sensorMounts.map((sensor) => (
+                  <div className="sensor-row" key={sensor.id}>
+                    <span className={'sensor-kind ' + sensor.kind} />
+                    <strong>{sensor.kind === 'color' ? 'Cor' : sensor.kind === 'distance' ? 'Distância' : 'Força'}</strong>
+                    <select aria-label={'Porta do sensor ' + sensor.id} value={sensor.port} onChange={(event) => updateSensor(sensor.id, { port: event.target.value as SensorMount['port'] })}>
+                      {(['A','B','C','D','E','F'] as const).map((port) => <option key={port} value={port}>{port}</option>)}
+                    </select>
+                    <button className="remove-sensor" title="Remover sensor" onClick={() => removeSensor(sensor.id)}><Trash2 size={14} /></button>
+                  </div>
+                ))}
+                <div className="sensor-add-actions">
+                  <button onClick={() => addSensor('color')} disabled={robotConfig.sensorMounts.length >= 10}><Plus size={13} /> Cor</button>
+                  <button onClick={() => addSensor('distance')} disabled={robotConfig.sensorMounts.length >= 10}><Plus size={13} /> Distância</button>
+                  <button onClick={() => addSensor('force')} disabled={robotConfig.sensorMounts.length >= 10}><Plus size={13} /> Força</button>
+                </div>
+              </div>
+              </>
             )}
           </section>
 
