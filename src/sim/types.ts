@@ -30,7 +30,19 @@ export type ArenaDefinition = {
   targets: MissionTarget[]
 }
 
+export type SensorMount = {
+  id: string
+  kind: 'color' | 'distance' | 'force'
+  port: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+  xMm: number
+  zMm: number
+  rotationDeg: number
+}
+
 export type RobotConfig = {
+  chassisWidthMm: number
+  chassisLengthMm: number
+  sensorMounts: SensorMount[]
   wheelDiameterMm: number
   axleTrackMm: number
   maxSpeedMmS: number
