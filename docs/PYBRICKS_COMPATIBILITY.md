@@ -15,12 +15,14 @@ O RoboSim usa Pyodide para executar Python no navegador e fornece módulos Pytho
 | `ColorSensor` | Leitura inicial | Cor/reflexão consultadas ao iniciar o programa. |
 | `UltrasonicSensor` | Leitura inicial | Distância consultada ao iniciar o programa. |
 | `ForceSensor` | Leitura inicial | Pressão baseada no contador de colisões. |
-| `PrimeHub.imu.heading()` | Leitura inicial | Heading no início da execução. |
+| `PrimeHub.imu.heading()` | Leitura inicial | Heading do robô no início da execução. |
+| Validação de portas | Implementado | O tipo de componente deve estar conectado à porta selecionada no construtor. |
+| Posição do sensor | Parcial | Leitura considera X/Z e rotação configuradas para o componente. |
 | `PrimeHub.display.text()` | Básico | Escreve no console virtual. |
 
 ## Modelo de execução
 
-O Worker executa o programa Python até o fim e coleta os comandos emitidos. Depois, o motor de simulação reproduz esses comandos no tempo. Por isso, leituras de sensores feitas dentro do mesmo script usam o snapshot recebido no início da execução, e não uma leitura bloqueante atualizada entre cada movimento.
+O Worker executa o programa Python até o fim e coleta os comandos emitidos. Depois, o motor de simulação reproduz esses comandos no tempo. As classes de sensor validam a porta e o tipo de dispositivo conectado e recebem um snapshot calculado a partir da posição/orientação configurada para aquele sensor. Por isso, leituras feitas dentro do mesmo script usam o estado inicial da rodada, e não uma leitura bloqueante atualizada entre cada movimento.
 
 Chamadas `straight` e `turn` são convertidas em velocidade + espera + parada. O movimento é aproximado usando o diâmetro de roda e a distância entre rodas configurados no robô. A aceleração, o atrito, o backlash, a tensão da bateria e as tolerâncias mecânicas ainda não são modelados.
 
