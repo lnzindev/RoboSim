@@ -14,6 +14,7 @@ export type WorkerRequest = {
 
 export type WorkerResponse =
   | { type: 'loading'; message: string }
+  | { type: 'ready'; message: string }
   | { type: 'stdout'; message: string }
   | { type: 'result'; commands: import('../sim/types').SimulationCommand[] }
   | { type: 'error'; message: string }
