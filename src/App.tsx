@@ -238,7 +238,9 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const runControllerRef = useRef<AbortController | null>(null)
 
-  useEffect(() => () => runControllerRef.current?.abort(), [])
+  useEffect(() => {
+    return () => { runControllerRef.current?.abort() }
+  }, [])
 
   const addLog = useCallback((message: string) => {
     setLogs((current) => [...current.slice(-39), message])
