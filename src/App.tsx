@@ -557,9 +557,18 @@ export default function App() {
                     <span className={'sensor-kind ' + sensor.kind} />
                     <strong>{sensor.kind === 'color' ? 'Cor' : sensor.kind === 'distance' ? 'Distância' : 'Força'}</strong>
                     <select aria-label={'Porta do sensor ' + sensor.id} value={sensor.port} onChange={(event) => updateSensor(sensor.id, { port: event.target.value as SensorMount['port'] })}>
-                      {(['A','B','C','D','E','F'] as const).map((port) => <option key={port} value={port}>{port}</option>)}
+                      {(['A','B','C','D','E','F'] as const).map((port) => {
+                        const usedElsewhere = port === robotConfig.leftMotorPort || port === robotConfig.rightMotorPort ||
+                          robotConfig.sensorMounts.some((other) => other.id !== sensor.id && other.port === port)
+                        return <option key={port} value={port} disabled={usedElsewhere}>{port}</option>
+                      })}
                     </select>
                     <button className="remove-sensor" title="Remover sensor" onClick={() => removeSensor(sensor.id)}><Trash2 size={14} /></button>
+                    <div className="sensor-geometry">
+                      <label>X <input aria-label="Posição X do sensor em mm" type="number" min="-250" max="250" value={sensor.xMm} onChange={(event) => updateSensor(sensor.id, { xMm: Number(event.target.value) })} /></label>
+                      <label>Z <input aria-label="Posição Z do sensor em mm" type="number" min="-250" max="300" value={sensor.zMm} onChange={(event) => updateSensor(sensor.id, { zMm: Number(event.target.value) })} /></label>
+                      <label>Ângulo <input aria-label="Rotação do sensor em graus" type="number" min="-360" max="360" value={sensor.rotationDeg} onChange={(event) => updateSensor(sensor.id, { rotationDeg: Number(event.target.value) })} /></label>
+                    </div>
                   </div>
                 ))}
                 <div className="sensor-add-actions">
