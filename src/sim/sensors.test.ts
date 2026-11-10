@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { practiceArena } from './arena'
 import { readDistanceMm, readSensorSnapshot } from './sensors'
 import { createInitialRobot } from './physics'
-import { spikePrimePreset } from '../robot/presets'
 
 describe('virtual sensors', () => {
   it('returns a finite distance reading inside the field', () => {
@@ -12,7 +11,7 @@ describe('virtual sensors', () => {
   })
 
   it('returns heading, color and force values in a stable snapshot', () => {
-    const snapshot = readSensorSnapshot(createInitialRobot(), spikePrimePreset, practiceArena)
+    const snapshot = readSensorSnapshot(createInitialRobot(), practiceArena)
     expect(snapshot.headingDeg).toBe(0)
     expect(snapshot.color).toBe('BLACK')
     expect(snapshot.forcePressed).toBe(false)
