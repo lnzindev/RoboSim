@@ -28,9 +28,11 @@ describe('simulation physics', () => {
   })
 
   it('detects collisions against mission obstacles', () => {
-    const initial = { ...createInitialRobot(), x: 0.92, z: 1.03 }
-    const moving = setDriveSpeeds(initial, 500, 500, spikePrimePreset)
-    const next = stepRobot(moving, spikePrimePreset, practiceArena, 1 / 60)
+    const initial = { ...createInitialRobot(), x: 0.92, z: 0.8 }
+    let next = setDriveSpeeds(initial, 500, 500, spikePrimePreset)
+    for (let tick = 0; tick < 10 && next.collisionCount === 0; tick += 1) {
+      next = stepRobot(next, spikePrimePreset, practiceArena, 1 / 60)
+    }
     expect(next.collisionCount).toBe(1)
     expect(next.rightSpeedMmS).toBe(0)
   })
