@@ -20,12 +20,32 @@ export type MissionTarget = {
   color: string
 }
 
+export type MissionInfo = {
+  id: string
+  name: string
+  description: string
+}
+
+export type LaunchZone = {
+  id: string
+  x: number
+  z: number
+  radius: number
+  startAngle: number
+  color: string
+}
+
 export type ArenaDefinition = {
   id: string
   name: string
   width: number
   depth: number
   official: boolean
+  seasonLabel?: string
+  layoutNote?: string
+  cellSize?: number
+  launchZones?: LaunchZone[]
+  missions?: MissionInfo[]
   obstacles: Obstacle[]
   targets: MissionTarget[]
 }
