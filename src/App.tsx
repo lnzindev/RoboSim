@@ -200,6 +200,7 @@ export default function App() {
   const completedRef = useRef<Set<string>>(new Set())
   const lastCollisionRef = useRef(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const runControllerRef = useRef<AbortController | null>(null)
 
   const addLog = useCallback((message: string) => {
     setLogs((current) => [...current.slice(-39), message])
@@ -322,12 +323,17 @@ export default function App() {
     setCompletedMissions([])
     setMissionScore(0)
     lastCollisionRef.current = 0
+    const controller = new AbortController()
+    runControllerRef.current = controller
     try {
       const commands = await executePython(
         code,
         readSensorSnapshot(initial, arena),
         addLog,
+        30_000,
+        controller.signal,
       )
+      if (controller.signal.aborted) return
       const prepared = prepareCommands(commands)
       if (!prepared.length) {
         setStatus('idle')
@@ -339,8 +345,11 @@ export default function App() {
       addLog(`Python executado. ${prepared.length} comandos enviados à simulação.`)
       setStatus('running')
     } catch (error) {
+      if (controller.signal.aborted) return
       setStatus('idle')
       addLog(`Erro Python: ${error instanceof Error ? error.message : String(error)}`)
+    } finally {
+      if (runControllerRef.current === controller) runControllerRef.current = null
     }
   }
 
@@ -363,6 +372,8 @@ export default function App() {
   }
 
   function stopProgram() {
+    runControllerRef.current?.abort()
+    runControllerRef.current = null
     queueRef.current = []
     waitRemainingRef.current = 0
     stateRef.current = stopRobot(stateRef.current)
@@ -372,6 +383,8 @@ export default function App() {
   }
 
   function resetSimulation() {
+    runControllerRef.current?.abort()
+    runControllerRef.current = null
     queueRef.current = []
     waitRemainingRef.current = 0
     const initial = createInitialRobot()
