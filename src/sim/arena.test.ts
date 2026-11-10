@@ -3,7 +3,7 @@ import { practiceArena } from './arena'
 import { spikePrimePreset } from '../robot/presets'
 
 function isClearFromObstacles(x: number, z: number): boolean {
-  const radius = Math.hypot(spikePrimePreset.chassisWidthMm, spikePrimePreset.chassisLengthMm) / 2000
+  const radius = Math.max(0.14, Math.hypot(spikePrimePreset.chassisWidthMm, spikePrimePreset.chassisLengthMm) / 2000)
   return practiceArena.obstacles.every((obstacle) => {
     const nearestX = Math.max(obstacle.x - obstacle.width / 2, Math.min(x, obstacle.x + obstacle.width / 2))
     const nearestZ = Math.max(obstacle.z - obstacle.depth / 2, Math.min(z, obstacle.z + obstacle.depth / 2))
