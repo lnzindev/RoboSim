@@ -8,11 +8,12 @@ import {
   Play, RotateCcw, Save, StepForward, Square, Timer, Upload, Wifi,
 } from 'lucide-react'
 import * as THREE from 'three'
-import { practiceArena } from './sim/arena'
+import { customArena, practiceArena } from './sim/arena'
 import { collectMissionEvents } from './sim/scoring'
 import { readSensorSnapshot } from './sim/sensors'
 import { FIXED_STEP_SECONDS, createInitialRobot, setDriveSpeeds, stepRobot, stopRobot } from './sim/physics'
-import type { RobotConfig, RobotState, SimulationCommand } from './sim/types'
+import type { ArenaDefinition, RobotConfig, RobotState, SimulationCommand } from './sim/types'
+import { motorSpeedToLinearMmS } from './sim/drivebase'
 import { spikePrimePreset } from './robot/presets'
 import { createProject, parseProject, RobotConfigSchema } from './robot/project'
 import { executePython } from './runtime/pythonRuntime'
@@ -51,11 +52,11 @@ function prepareCommands(commands: SimulationCommand[]): SimulationCommand[] {
   return commands.flatMap((command) => command.type === 'motorTimed' ? appendMotorStop(command) : [command])
 }
 
-function RobotModel({ state, config }: { state: RobotState; config: RobotConfig }) {
+function RobotModel({ state, config, arena }: { state: RobotState; config: RobotConfig; arena: ArenaDefinition }) {
   const group = useRef<THREE.Group>(null)
   useFrame(() => {
     if (!group.current) return
-    group.current.position.set(state.x - practiceArena.width / 2, 0.09, state.z - practiceArena.depth / 2)
+    group.current.position.set(state.x - arena.width / 2, 0.09, state.z - arena.depth / 2)
     group.current.rotation.y = state.heading
   })
   const wheelOffset = Math.max(0.065, Math.min(0.19, config.axleTrackMm / 2000))
@@ -91,7 +92,7 @@ function RobotModel({ state, config }: { state: RobotState; config: RobotConfig 
   )
 }
 
-function ArenaScene({ state, config }: { state: RobotState; config: RobotConfig }) {
+function ArenaScene({ state, config, arena }: { state: RobotState; config: RobotConfig; arena: ArenaDefinition }) {
   return (
     <>
       <color attach="background" args={['#101a26']} />
@@ -99,12 +100,12 @@ function ArenaScene({ state, config }: { state: RobotState; config: RobotConfig 
       <directionalLight position={[3, 6, 4]} intensity={1.7} castShadow shadow-mapSize={[1024, 1024]} />
       <PerspectiveCamera makeDefault position={[3.8, 4.1, 4.8]} fov={43} />
       <mesh receiveShadow position={[0, -0.035, 0]}>
-        <boxGeometry args={[practiceArena.width, 0.06, practiceArena.depth]} />
+        <boxGeometry args={[arena.width, 0.06, arena.depth]} />
         <meshStandardMaterial color="#1c3336" roughness={0.94} />
       </mesh>
       <Grid
         position={[0, 0.001, 0]}
-        args={[practiceArena.width, practiceArena.depth]}
+        args={[arena.width, arena.depth]}
         cellSize={0.15}
         cellThickness={0.55}
         cellColor="#41645d"
@@ -113,35 +114,35 @@ function ArenaScene({ state, config }: { state: RobotState; config: RobotConfig 
         fadeDistance={7}
         infiniteGrid={false}
       />
-      <mesh position={[0, 0.025, -practiceArena.depth / 2]}>
+      <mesh position={[0, 0.025, -arena.depth / 2]}>
         <boxGeometry args={[practiceArena.width, 0.05, 0.035]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
-      <mesh position={[0, 0.025, practiceArena.depth / 2]}>
+      <mesh position={[0, 0.025, arena.depth / 2]}>
         <boxGeometry args={[practiceArena.width, 0.05, 0.035]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
-      <mesh position={[-practiceArena.width / 2, 0.025, 0]}>
+      <mesh position={[-arena.width / 2, 0.025, 0]}>
         <boxGeometry args={[0.035, 0.05, practiceArena.depth]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
-      <mesh position={[practiceArena.width / 2, 0.025, 0]}>
+      <mesh position={[arena.width / 2, 0.025, 0]}>
         <boxGeometry args={[0.035, 0.05, practiceArena.depth]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
-      {practiceArena.obstacles.map((obstacle) => (
+      {arena.obstacles.map((obstacle) => (
         <mesh
           key={obstacle.id}
           castShadow
           receiveShadow
-          position={[obstacle.x - practiceArena.width / 2, obstacle.height / 2 + 0.01, obstacle.z - practiceArena.depth / 2]}
+          position={[obstacle.x - arena.width / 2, obstacle.height / 2 + 0.01, obstacle.z - arena.depth / 2]}
         >
           <boxGeometry args={[obstacle.width, obstacle.height, obstacle.depth]} />
           <meshStandardMaterial color={obstacle.color} roughness={0.65} />
         </mesh>
       ))}
-      {practiceArena.targets.map((target) => (
-        <group key={target.id} position={[target.x - practiceArena.width / 2, 0.012, target.z - practiceArena.depth / 2]}>
+      {arena.targets.map((target) => (
+        <group key={target.id} position={[target.x - arena.width / 2, 0.012, target.z - arena.depth / 2]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]}>
             <cylinderGeometry args={[target.radius, target.radius, 0.018, 32]} />
             <meshStandardMaterial color={target.color} transparent opacity={0.8} />
@@ -152,7 +153,7 @@ function ArenaScene({ state, config }: { state: RobotState; config: RobotConfig 
           </mesh>
         </group>
       ))}
-      <RobotModel state={state} config={config} />
+      <RobotModel state={state} config={config} arena={arena} />
       <OrbitControls target={[0, 0, 0]} minDistance={2.7} maxDistance={7.5} maxPolarAngle={Math.PI / 2.05} />
     </>
   )
@@ -167,7 +168,7 @@ function loadSavedCode(): string {
   try { return localStorage.getItem('robosim:code') || STARTER_CODE } catch { return STARTER_CODE }
 }
 
-function loadSavedConfig(): RobotConfig {
+function loadSavedArena(): string {\n  try { return localStorage.getItem('robosim:arena') || practiceArena.id } catch { return practiceArena.id }\n}\n\nfunction loadSavedConfig(): RobotConfig {
   try {
     const raw = localStorage.getItem('robosim:robot')
     return raw ? RobotConfigSchema.parse(JSON.parse(raw)) : spikePrimePreset
@@ -178,7 +179,7 @@ function loadSavedConfig(): RobotConfig {
 
 export default function App() {
   const [code, setCode] = useState(loadSavedCode)
-  const [robotConfig, setRobotConfig] = useState<RobotConfig>(loadSavedConfig)
+  const [robotConfig, setRobotConfig] = useState<RobotConfig>(loadSavedConfig)\n  const [arenaId, setArenaId] = useState(loadSavedArena)\n  const arena = arenaId === customArena.id ? customArena : practiceArena
   const [robotState, setRobotState] = useState<RobotState>(createInitialRobot)
   const [status, setStatus] = useState<RunStatus>('idle')
   const [remaining, setRemaining] = useState(150)
@@ -201,11 +202,11 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem('robosim:code', code)
-      localStorage.setItem('robosim:robot', JSON.stringify(robotConfig))
+      localStorage.setItem('robosim:robot', JSON.stringify(robotConfig))\n      localStorage.setItem('robosim:arena', arena.id)
     } catch {
       addLog('Não foi possível salvar automaticamente neste navegador.')
     }
-  }, [code, robotConfig, addLog])
+  }, [code, robotConfig, arena, addLog])
 
   const advanceOneTick = useCallback((deltaSeconds: number) => {
     let next = stateRef.current
@@ -214,7 +215,7 @@ export default function App() {
       next = setDriveSpeeds(next, command.leftMmS, command.rightMmS, robotConfig)
       queueRef.current.shift()
     } else if (command?.type === 'motor') {
-      const wheelSpeed = command.speedDegS * Math.PI * robotConfig.wheelDiameterMm / 360
+      const wheelSpeed = motorSpeedToLinearMmS(command.speedDegS, robotConfig.wheelDiameterMm)
       const left = command.port === robotConfig.leftMotorPort ? wheelSpeed : next.leftSpeedMmS
       const right = command.port === robotConfig.rightMotorPort ? wheelSpeed : next.rightSpeedMmS
       next = setDriveSpeeds(next, left, right, robotConfig)
@@ -233,8 +234,8 @@ export default function App() {
       queueRef.current.shift()
     }
 
-    next = stepRobot(next, robotConfig, practiceArena, deltaSeconds)
-    const events = collectMissionEvents(next, practiceArena, completedRef.current)
+    next = stepRobot(next, robotConfig, arena, deltaSeconds)
+    const events = collectMissionEvents(next, arena, completedRef.current)
     if (events.length) {
       for (const event of events) {
         completedRef.current.add(event.id)
@@ -268,7 +269,7 @@ export default function App() {
       addLog('Programa concluído. Motores parados.')
       return
     }
-  }, [robotConfig, addLog])
+  }, [robotConfig, arena, addLog])
 
   useEffect(() => {
     if (status !== 'running') return
@@ -297,7 +298,7 @@ export default function App() {
     return () => cancelAnimationFrame(frame)
   }, [status, advanceOneTick])
 
-  const sensorSnapshot = readSensorSnapshot(robotState, practiceArena)
+  const sensorSnapshot = readSensorSnapshot(robotState, arena)
   const averageSpeed = Math.round((Math.abs(robotState.leftSpeedMmS) + Math.abs(robotState.rightSpeedMmS)) / 2)
   const heading = ((robotState.heading * 180 / Math.PI) % 360 + 360) % 360
 
@@ -317,7 +318,7 @@ export default function App() {
     try {
       const commands = await executePython(
         code,
-        readSensorSnapshot(initial, practiceArena),
+        readSensorSnapshot(initial, arena),
         addLog,
       )
       const prepared = prepareCommands(commands)
@@ -380,7 +381,7 @@ export default function App() {
   }
 
   function exportProject() {
-    const project = createProject(code, robotConfig)
+    const project = createProject(code, robotConfig, arena.id)
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -432,12 +433,12 @@ export default function App() {
         <section className="left-column">
           <div className="sim-panel">
             <div className="panel-heading">
-              <div><span className="eyebrow">AMBIENTE DE TESTE · NÃO OFICIAL</span><h1>Arena FLL</h1></div>
-              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><span>3 × 3 M</span></div>
+              <div><span className="eyebrow">AMBIENTE DE TESTE · NÃO OFICIAL</span><h1>{arena.name}</h1></div>
+              <div className="heading-pills"><span><span className="live-dot" /> 3D ATIVO</span><span>{arena.width} × {arena.depth} M</span></div>
             </div>
             <div className="viewport">
               <Canvas shadows dpr={[1, 1.6]}>
-                <ArenaScene state={robotState} config={robotConfig} />
+                <ArenaScene state={robotState} config={robotConfig} arena={arena} />
               </Canvas>
               <div className="viewport-tag"><span className="live-dot" /> LIVE VIEW</div>
               <div className="axis-tag">X {robotState.x.toFixed(2)} · Z {robotState.z.toFixed(2)} · {heading.toFixed(0)}°</div>
@@ -480,7 +481,7 @@ export default function App() {
           <section className="missions-panel">
             <div className="section-heading"><div><span className="eyebrow">OBJETIVOS DA ARENA</span><h2>Missões de demonstração</h2></div><span className="demo-tag">DEMO</span></div>
             <div className="mission-list">
-              {practiceArena.targets.map((target) => {
+              {arena.targets.map((target) => {
                 const done = completedMissions.includes(target.id)
                 return <div className={done ? 'mission-item completed' : 'mission-item'} key={target.id}>
                   <span className="mission-color" style={{ background: target.color }} />
