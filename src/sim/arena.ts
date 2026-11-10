@@ -18,7 +18,16 @@ export const practiceArena: ArenaDefinition = {
   ],
 }
 
+export const customArena: ArenaDefinition = {
+  id: 'robosim-custom-v1',
+  name: 'Arena personalizada',
+  width: 4,
+  depth: 3,
+  official: false,
+  obstacles: [],
+  targets: [],
+}
+
 export function getArenaById(id: string): ArenaDefinition {
-  if (id === practiceArena.id) return practiceArena
-  return practiceArena
+  return id === customArena.id ? customArena : practiceArena
 }
