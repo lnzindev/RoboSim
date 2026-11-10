@@ -307,7 +307,11 @@ export default function App() {
       addLog('Tempo de rodada encerrado: 2min30s.')
       return
     }
-    if (queueRef.current.length === 0) {
+    if (
+      queueRef.current.length === 0 &&
+      Math.abs(stateRef.current.leftSpeedMmS) < 0.5 &&
+      Math.abs(stateRef.current.rightSpeedMmS) < 0.5
+    ) {
       stateRef.current = stopRobot(stateRef.current)
       setStatus('idle')
       setRobotState(stateRef.current)
