@@ -12,7 +12,7 @@ export const practiceArena: ArenaDefinition = {
     { id: 'barrier-center', x: 1.52, z: 1.68, width: 0.52, depth: 0.18, height: 0.12, color: '#d65c52' },
   ],
   targets: [
-    { id: 'target-green', label: 'Zona verde', x: 0.58, z: 0.62, radius: 0.2, points: 10, color: '#48b98a' },
+    { id: 'target-green', label: 'Zona verde', x: 0.58, z: 1.0, radius: 0.2, points: 10, color: '#48b98a' },
     { id: 'target-yellow', label: 'Zona amarela', x: 2.38, z: 2.38, radius: 0.2, points: 15, color: '#e3b44d' },
     { id: 'target-blue', label: 'Zona azul', x: 2.42, z: 0.48, radius: 0.2, points: 20, color: '#5798e2' },
   ],
