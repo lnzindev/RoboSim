@@ -115,7 +115,7 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
         infiniteGrid={false}
       />
       <mesh position={[0, 0.025, -arena.depth / 2]}>
-        <boxGeometry args={[practiceArena.width, 0.05, 0.035]} />
+        <boxGeometry args={[arena.width, 0.05, 0.035]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[0, 0.025, arena.depth / 2]}>
@@ -123,7 +123,7 @@ function ArenaScene({ state, config, arena }: { state: RobotState; config: Robot
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[-arena.width / 2, 0.025, 0]}>
-        <boxGeometry args={[0.035, 0.05, practiceArena.depth]} />
+        <boxGeometry args={[0.035, 0.05, arena.depth]} />
         <meshStandardMaterial color="#eee8d9" />
       </mesh>
       <mesh position={[arena.width / 2, 0.025, 0]}>
@@ -465,8 +465,8 @@ export default function App() {
               <div><small>DISTÂNCIA</small><strong>{Math.round(sensorSnapshot.distanceMm)} mm</strong></div>
               <div><small>COR</small><strong>{sensorSnapshot.color}</strong></div>
               <div><small>REFLEXÃO</small><strong>{sensorSnapshot.reflection}%</strong></div>
-              <div><small>MOTOR B</small><strong>{Math.round(robotState.leftSpeedMmS)} mm/s</strong></div>
-              <div><small>MOTOR C</small><strong>{Math.round(robotState.rightSpeedMmS)} mm/s</strong></div>
+              <div><small>MOTOR {robotConfig.leftMotorPort}</small><strong>{Math.round(robotState.leftSpeedMmS)} mm/s</strong></div>
+              <div><small>MOTOR {robotConfig.rightMotorPort}</small><strong>{Math.round(robotState.rightSpeedMmS)} mm/s</strong></div>
             </div>
           </section>
 
