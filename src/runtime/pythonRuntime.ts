@@ -6,14 +6,17 @@ export function executePython(
   environment: RuntimeEnvironment,
   onOutput: (message: string) => void,
   timeoutMs = 30_000,
+  signal?: AbortSignal,
 ): Promise<SimulationCommand[]> {
   return new Promise((resolve, reject) => {
     const worker = new Worker(new URL('./python.worker.ts', import.meta.url), { type: 'module' })
     let settled = false
+    let abortHandler: (() => void) | undefined
     const finish = (callback: () => void) => {
       if (settled) return
       settled = true
       window.clearTimeout(timeout)
+      if (abortHandler) signal?.removeEventListener('abort', abortHandler)
       worker.terminate()
       callback()
     }
@@ -21,6 +24,12 @@ export function executePython(
       finish(() => reject(new Error('Tempo limite excedido. O Worker foi encerrado para interromper o programa.')))
     }, timeoutMs)
 
+    abortHandler = () => finish(() => reject(new Error('Execução cancelada.')))
+    if (signal?.aborted) {
+      abortHandler()
+      return
+    }
+    signal?.addEventListener('abort', abortHandler, { once: true })
     worker.addEventListener('message', (event: MessageEvent<WorkerResponse>) => {
       const message = event.data
       if (message.type === 'loading' || message.type === 'stdout') {
