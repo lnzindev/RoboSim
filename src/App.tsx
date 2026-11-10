@@ -545,6 +545,7 @@ export default function App() {
                 <span>DIMENSÕES SALVAS NO PROJETO</span>
               </div>
             )}
+            {arena.layoutNote && <div className="arena-note">{arena.layoutNote}</div>}
             <div className="viewport">
               <Canvas shadows dpr={[1, 1.6]}>
                 <ArenaScene state={robotState} config={robotConfig} arena={arena} />
